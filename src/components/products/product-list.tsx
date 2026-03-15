@@ -8,7 +8,8 @@ import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Search, Eye, Edit, AlertCircle } from 'lucide-react'
+import { Search, Eye, Edit, Trash2, AlertCircle } from 'lucide-react'
+import { deleteProduct } from '@/app/actions/products'
 
 interface Product {
   id: string
@@ -40,12 +41,27 @@ export function ProductList({
   const router = useRouter()
   const [search, setSearch] = useState(initialSearch)
   const [category, setCategory] = useState(initialCategory)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const handleFilter = (searchValue: string, categoryValue: string) => {
     const params = new URLSearchParams()
     if (searchValue) params.set('search', searchValue)
     if (categoryValue) params.set('category', categoryValue)
     router.push(`/products${params.toString() ? `?${params.toString()}` : ''}`)
+  }
+
+  const handleDelete = async (id: string, name: string) => {
+    if (confirm(`Are you sure you want to delete product "${name}"?`)) {
+      setDeletingId(id)
+      try {
+        await deleteProduct(id)
+        router.refresh()
+      } catch (error) {
+        alert('Failed to delete product. It may be used in orders.')
+      } finally {
+        setDeletingId(null)
+      }
+    }
   }
 
   return (
@@ -90,80 +106,100 @@ export function ProductList({
           </div>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {products.map((product) => {
-            const isLowStock = product.currentStock <= product.lowStockAlert
-            const profit = product.sellingPrice - product.costPrice
-            const profitMargin = ((profit / product.sellingPrice) * 100).toFixed(1)
+        <div className="bg-white rounded-lg border overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Product
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Category
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Price
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Stock
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {products.map((product) => {
+                  const isLowStock = product.currentStock <= product.lowStockAlert
+                  const profit = product.sellingPrice - product.costPrice
+                  const profitMargin = ((profit / product.sellingPrice) * 100).toFixed(1)
 
-            return (
-              <Card key={product.id} className="overflow-hidden" data-testid={`product-card-${product.id}`}>
-                <div className="p-6">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900">{product.name}</h3>
-                      <p className="text-sm text-gray-500 mt-1">SKU: {product.sku}</p>
-                    </div>
-                    {!product.isActive && (
-                      <Badge variant="secondary" className="ml-2">
-                        Inactive
-                      </Badge>
-                    )}
-                  </div>
-
-                  {product.category && (
-                    <Badge variant="outline" className="mb-3">
-                      {product.category.name}
-                    </Badge>
-                  )}
-
-                  <div className="space-y-2 mb-4">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Selling Price:</span>
-                      <span className="font-semibold text-gray-900">{formatCurrency(product.sellingPrice)}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Cost Price:</span>
-                      <span className="text-gray-600">{formatCurrency(product.costPrice)}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Profit Margin:</span>
-                      <span className="text-green-600 font-medium">{profitMargin}%</span>
-                    </div>
-                  </div>
-
-                  <div className={`flex items-center justify-between p-3 rounded-lg ${isLowStock ? 'bg-red-50' : 'bg-gray-50'}`}>
-                    <div>
-                      <p className="text-xs text-gray-600">Stock</p>
-                      <p className={`font-semibold ${isLowStock ? 'text-red-600' : 'text-gray-900'}`}>
-                        {product.currentStock} units
-                      </p>
-                    </div>
-                    {isLowStock && <AlertCircle className="h-5 w-5 text-red-600" />}
-                  </div>
-
-                  {product.variants.length > 0 && (
-                    <p className="text-xs text-gray-500 mt-2">{product.variants.length} variant(s)</p>
-                  )}
-
-                  <div className="flex items-center gap-2 mt-4 pt-4 border-t">
-                    <Link href={`/products/${product.id}`} className="flex-1">
-                      <Button variant="outline" size="sm" className="w-full" data-testid={`view-product-${product.id}`}>
-                        <Eye className="h-4 w-4 mr-2" />
-                        View
-                      </Button>
-                    </Link>
-                    <Link href={`/products/${product.id}/edit`} className="flex-1">
-                      <Button size="sm" className="w-full" data-testid={`edit-product-${product.id}`}>
-                        <Edit className="h-4 w-4 mr-2" />
-                        Edit
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-              </Card>
-            )
-          })}
+                  return (
+                    <tr key={product.id} className="hover:bg-gray-50" data-testid={`product-row-${product.id}`}>
+                      <td className="px-6 py-4">
+                        <div>
+                          <p className="font-medium text-gray-900">{product.name}</p>
+                          <p className="text-sm text-gray-500">SKU: {product.sku}</p>
+                          {product.variants.length > 0 && (
+                            <p className="text-xs text-gray-400 mt-1">{product.variants.length} variant(s)</p>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-600">
+                        {product.category?.name || '-'}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm">
+                          <p className="font-semibold text-gray-900">{formatCurrency(product.sellingPrice)}</p>
+                          <p className="text-gray-500">Cost: {formatCurrency(product.costPrice)}</p>
+                          <p className="text-xs text-green-600">Margin: {profitMargin}%</p>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <span className={`font-medium ${isLowStock ? 'text-red-600' : 'text-gray-900'}`}>
+                            {product.currentStock}
+                          </span>
+                          {isLowStock && <AlertCircle className="h-4 w-4 text-red-600" />}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <Badge variant={product.isActive ? 'default' : 'secondary'}>
+                          {product.isActive ? 'Active' : 'Inactive'}
+                        </Badge>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-center gap-2">
+                          <Link href={`/products/${product.id}`}>
+                            <Button variant="ghost" size="sm" data-testid={`view-product-${product.id}`}>
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </Link>
+                          <Link href={`/products/${product.id}/edit`}>
+                            <Button variant="ghost" size="sm" data-testid={`edit-product-${product.id}`}>
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </Link>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDelete(product.id, product.name)}
+                            disabled={deletingId === product.id}
+                            data-testid={`delete-product-${product.id}`}
+                          >
+                            <Trash2 className="h-4 w-4 text-red-600" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

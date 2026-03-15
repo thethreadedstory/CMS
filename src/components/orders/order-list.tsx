@@ -8,7 +8,8 @@ import { Badge } from '@/components/ui/badge'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Search, Eye, Edit } from 'lucide-react'
+import { Search, Eye, Edit, Trash2 } from 'lucide-react'
+import { deleteOrder } from '@/app/actions/orders'
 
 interface Order {
   id: string
@@ -69,6 +70,7 @@ export function OrderList({
   const [search, setSearch] = useState(initialSearch)
   const [status, setStatus] = useState(initialStatus)
   const [payment, setPayment] = useState(initialPayment)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const handleFilter = (searchValue: string, statusValue: string, paymentValue: string) => {
     const params = new URLSearchParams()
@@ -76,6 +78,20 @@ export function OrderList({
     if (statusValue) params.set('status', statusValue)
     if (paymentValue) params.set('payment', paymentValue)
     router.push(`/orders${params.toString() ? `?${params.toString()}` : ''}`)
+  }
+
+  const handleDelete = async (id: string, orderNumber: string) => {
+    if (confirm(`Are you sure you want to delete order "${orderNumber}"?`)) {
+      setDeletingId(id)
+      try {
+        await deleteOrder(id)
+        router.refresh()
+      } catch (error) {
+        alert('Failed to delete order.')
+      } finally {
+        setDeletingId(null)
+      }
+    }
   }
 
   return (
@@ -137,61 +153,91 @@ export function OrderList({
           </div>
         </Card>
       ) : (
-        <div className="space-y-4">
-          {orders.map((order) => (
-            <Card key={order.id} className="overflow-hidden" data-testid={`order-card-${order.id}`}>
-              <div className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="font-semibold text-lg text-gray-900">{order.orderNumber}</h3>
-                      <Badge className={statusColors[order.orderStatus]}>
-                        {order.orderStatus.replace('_', ' ')}
-                      </Badge>
-                      <Badge className={paymentColors[order.paymentStatus]}>
-                        {order.paymentStatus.replace('_', ' ')}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-gray-600">
-                      Customer: <span className="font-medium text-gray-900">{order.customer.name}</span>
-                    </p>
-                    <p className="text-sm text-gray-500 mt-1">{formatDate(order.orderDate)}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-gray-900">{formatCurrency(order.totalAmount)}</p>
-                    <p className="text-sm text-gray-600 mt-1">
-                      Paid: {formatCurrency(order.paidAmount)}
-                    </p>
-                    {order.pendingAmount > 0 && (
-                      <p className="text-sm text-red-600 font-medium">
-                        Due: {formatCurrency(order.pendingAmount)}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between pt-4 border-t">
-                  <div className="text-sm text-gray-600">
-                    {order.items.length} item(s) • {order._count.payments} payment(s)
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Link href={`/orders/${order.id}`}>
-                      <Button variant="outline" size="sm" data-testid={`view-order-${order.id}`}>
-                        <Eye className="h-4 w-4 mr-2" />
-                        View
-                      </Button>
-                    </Link>
-                    <Link href={`/orders/${order.id}/edit`}>
-                      <Button size="sm" data-testid={`edit-order-${order.id}`}>
-                        <Edit className="h-4 w-4 mr-2" />
-                        Edit
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          ))}
+        <div className="bg-white rounded-lg border overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Order
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Customer
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Date
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Amount
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {orders.map((order) => (
+                  <tr key={order.id} className="hover:bg-gray-50" data-testid={`order-row-${order.id}`}>
+                    <td className="px-6 py-4">
+                      <p className="font-medium text-gray-900">{order.orderNumber}</p>
+                      <p className="text-xs text-gray-500">{order.items.length} item(s)</p>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-900">
+                      {order.customer.name}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      {formatDate(order.orderDate)}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm">
+                        <p className="font-semibold text-gray-900">{formatCurrency(order.totalAmount)}</p>
+                        <p className="text-xs text-gray-500">Paid: {formatCurrency(order.paidAmount)}</p>
+                        {order.pendingAmount > 0 && (
+                          <p className="text-xs text-red-600">Due: {formatCurrency(order.pendingAmount)}</p>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col gap-1">
+                        <Badge className={statusColors[order.orderStatus]}>
+                          {order.orderStatus.replace('_', ' ')}
+                        </Badge>
+                        <Badge className={paymentColors[order.paymentStatus]}>
+                          {order.paymentStatus.replace('_', ' ')}
+                        </Badge>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-center gap-2">
+                        <Link href={`/orders/${order.id}`}>
+                          <Button variant="ghost" size="sm" data-testid={`view-order-${order.id}`}>
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </Link>
+                        <Link href={`/orders/${order.id}/edit`}>
+                          <Button variant="ghost" size="sm" data-testid={`edit-order-${order.id}`}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </Link>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(order.id, order.orderNumber)}
+                          disabled={deletingId === order.id}
+                          data-testid={`delete-order-${order.id}`}
+                        >
+                          <Trash2 className="h-4 w-4 text-red-600" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
