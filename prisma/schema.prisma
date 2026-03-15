@@ -1,0 +1,294 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User metadata (Clerk handles authentication)
+model UserMetadata {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique
+  role      String   @default("admin") // admin, staff, manager
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Customer Management
+model Customer {
+  id            String    @id @default(cuid())
+  name          String
+  phone         String?
+  email         String?
+  address       String?
+  city          String?
+  notes         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  orders        Order[]
+  payments      Payment[]
+  
+  @@index([name])
+  @@index([phone])
+}
+
+// Product Category
+model ProductCategory {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  products    Product[]
+}
+
+// Product
+model Product {
+  id               String          @id @default(cuid())
+  name             String
+  sku              String          @unique
+  description      String?
+  categoryId       String?
+  sellingPrice     Float
+  costPrice        Float
+  currentStock     Int             @default(0)
+  lowStockAlert    Int             @default(10)
+  isActive         Boolean         @default(true)
+  notes            String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  
+  category         ProductCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  variants         ProductVariant[]
+  orderItems       OrderItem[]
+  
+  @@index([sku])
+  @@index([categoryId])
+  @@index([name])
+}
+
+// Product Variants (size, color, style)
+model ProductVariant {
+  id           String   @id @default(cuid())
+  productId    String
+  variantType  String   // "size", "color", "style"
+  variantValue String   // "Small", "Red", "Modern", etc.
+  sku          String   @unique
+  priceAdjust  Float    @default(0) // Price adjustment from base product
+  stock        Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  @@index([productId])
+  @@index([sku])
+}
+
+// Order Status Enum
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  READY
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+// Payment Status Enum
+enum PaymentStatus {
+  UNPAID
+  PARTIALLY_PAID
+  PAID
+  REFUNDED
+}
+
+// Order
+model Order {
+  id              String        @id @default(cuid())
+  orderNumber     String        @unique
+  customerId      String
+  orderDate       DateTime      @default(now())
+  dueDate         DateTime?
+  deliveryDate    DateTime?
+  subtotal        Float
+  discount        Float         @default(0)
+  shippingCharge  Float         @default(0)
+  totalAmount     Float
+  paidAmount      Float         @default(0)
+  pendingAmount   Float
+  paymentStatus   PaymentStatus @default(UNPAID)
+  orderStatus     OrderStatus   @default(PENDING)
+  notes           String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  
+  customer        Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  items           OrderItem[]
+  payments        Payment[]
+  
+  @@index([customerId])
+  @@index([orderNumber])
+  @@index([orderStatus])
+  @@index([paymentStatus])
+  @@index([orderDate])
+}
+
+// Order Items
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int
+  unitPrice Float
+  total     Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  
+  @@index([orderId])
+  @@index([productId])
+}
+
+// Payment Method Enum
+enum PaymentMethod {
+  CASH
+  UPI
+  BANK_TRANSFER
+  CARD
+}
+
+// Payment
+model Payment {
+  id            String        @id @default(cuid())
+  customerId    String
+  orderId       String?
+  amount        Float
+  paymentDate   DateTime      @default(now())
+  paymentMethod PaymentMethod @default(CASH)
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  
+  customer      Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  order         Order?        @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  
+  @@index([customerId])
+  @@index([orderId])
+  @@index([paymentDate])
+}
+
+// Raw Material Category
+model RawMaterialCategory {
+  id           String        @id @default(cuid())
+  name         String        @unique
+  description  String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  
+  materials    RawMaterial[]
+}
+
+// Raw Material
+model RawMaterial {
+  id              String                @id @default(cuid())
+  name            String
+  categoryId      String?
+  unit            String                // "kg", "meter", "piece", etc.
+  currentStock    Float                 @default(0)
+  minimumStock    Float                 @default(0)
+  costPerUnit     Float
+  supplierId      String?
+  notes           String?
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  
+  category        RawMaterialCategory?  @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  supplier        Supplier?             @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  purchaseItems   RawMaterialPurchaseItem[]
+  
+  @@index([categoryId])
+  @@index([supplierId])
+  @@index([name])
+}
+
+// Supplier
+model Supplier {
+  id            String                 @id @default(cuid())
+  name          String
+  contactPerson String?
+  phone         String?
+  email         String?
+  address       String?
+  notes         String?
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+  
+  materials     RawMaterial[]
+  purchases     RawMaterialPurchase[]
+  
+  @@index([name])
+}
+
+// Raw Material Purchase
+model RawMaterialPurchase {
+  id              String                      @id @default(cuid())
+  purchaseNumber  String                      @unique
+  supplierId      String?
+  purchaseDate    DateTime                    @default(now())
+  totalAmount     Float
+  paymentStatus   PaymentStatus               @default(UNPAID)
+  notes           String?
+  createdAt       DateTime                    @default(now())
+  updatedAt       DateTime                    @updatedAt
+  
+  supplier        Supplier?                   @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  items           RawMaterialPurchaseItem[]
+  
+  @@index([supplierId])
+  @@index([purchaseNumber])
+  @@index([purchaseDate])
+}
+
+// Raw Material Purchase Items
+model RawMaterialPurchaseItem {
+  id            String               @id @default(cuid())
+  purchaseId    String
+  materialId    String
+  quantity      Float
+  costPerUnit   Float
+  total         Float
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  
+  purchase      RawMaterialPurchase  @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  material      RawMaterial          @relation(fields: [materialId], references: [id], onDelete: Restrict)
+  
+  @@index([purchaseId])
+  @@index([materialId])
+}
+
+// Activity Log (optional - for audit trail)
+model ActivityLog {
+  id          String   @id @default(cuid())
+  userId      String
+  action      String   // "created", "updated", "deleted"
+  entityType  String   // "order", "product", "customer", etc.
+  entityId    String
+  description String?
+  createdAt   DateTime @default(now())
+  
+  @@index([userId])
+  @@index([entityType])
+  @@index([createdAt])
+}
