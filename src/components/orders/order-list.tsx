@@ -10,6 +10,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Search, Eye, Edit, Trash2 } from 'lucide-react'
 import { deleteOrder } from '@/app/actions/orders'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { toast } from 'sonner'
 
 interface Order {
   id: string
@@ -71,6 +73,8 @@ export function OrderList({
   const [status, setStatus] = useState(initialStatus)
   const [payment, setPayment] = useState(initialPayment)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [selectedOrder, setSelectedOrder] = useState<{ id: string; orderNumber: string } | null>(null)
 
   const handleFilter = (searchValue: string, statusValue: string, paymentValue: string) => {
     const params = new URLSearchParams()
@@ -80,22 +84,32 @@ export function OrderList({
     router.push(`/orders${params.toString() ? `?${params.toString()}` : ''}`)
   }
 
-  const handleDelete = async (id: string, orderNumber: string) => {
-    if (confirm(`Are you sure you want to delete order "${orderNumber}"?`)) {
-      setDeletingId(id)
-      try {
-        await deleteOrder(id)
-        router.refresh()
-      } catch (error) {
-        alert('Failed to delete order.')
-      } finally {
-        setDeletingId(null)
-      }
+  const handleDeleteClick = (id: string, orderNumber: string) => {
+    setSelectedOrder({ id, orderNumber })
+    setConfirmOpen(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedOrder) return
+    
+    setDeletingId(selectedOrder.id)
+    setConfirmOpen(false)
+    
+    try {
+      await deleteOrder(selectedOrder.id)
+      toast.success(`Order "${selectedOrder.orderNumber}" deleted successfully`)
+      router.refresh()
+    } catch (error) {
+      toast.error('Failed to delete order')
+    } finally {
+      setDeletingId(null)
+      setSelectedOrder(null)
     }
   }
 
   return (
-    <div className="space-y-4">
+    <>
+      <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -225,7 +239,7 @@ export function OrderList({
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDelete(order.id, order.orderNumber)}
+                          onClick={() => handleDeleteClick(order.id, order.orderNumber)}
                           disabled={deletingId === order.id}
                           data-testid={`delete-order-${order.id}`}
                         >
@@ -241,5 +255,14 @@ export function OrderList({
         </div>
       )}
     </div>
+
+    <ConfirmDialog
+      open={confirmOpen}
+      onOpenChange={setConfirmOpen}
+      onConfirm={handleDeleteConfirm}
+      title="Delete Order"
+      description={`Are you sure you want to delete order "${selectedOrder?.orderNumber}"? This action cannot be undone.`}
+    />
+  </>
   )
 }
