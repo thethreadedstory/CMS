@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import NProgress from 'nprogress'
 import {
   LayoutDashboard,
   Users,
@@ -30,6 +31,10 @@ const navigation = [
 export function Sidebar() {
   const pathname = usePathname()
 
+  const handleLinkClick = () => {
+    NProgress.start()
+  }
+
   return (
     <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
       <div className="p-6 border-b border-gray-200">
@@ -42,6 +47,7 @@ export function Sidebar() {
             <Link
               key={item.name}
               href={item.href}
+              onClick={handleLinkClick}
               className={cn(
                 'flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors',
                 isActive
