@@ -16,8 +16,8 @@ export default function NewCustomerPage() {
       </div>
 
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Add New Customer</h1>
-        <p className="text-gray-600 mt-1">Enter customer details below</p>
+        <h1 className="page-title">Add New Customer</h1>
+        <p className="page-copy">Enter customer details below</p>
       </div>
 
       <CustomerForm />

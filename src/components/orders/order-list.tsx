@@ -46,20 +46,20 @@ interface OrderListProps {
 }
 
 const statusColors: Record<string, string> = {
-  PENDING: 'bg-yellow-100 text-yellow-800',
-  CONFIRMED: 'bg-blue-100 text-blue-800',
-  IN_PROGRESS: 'bg-purple-100 text-purple-800',
-  READY: 'bg-cyan-100 text-cyan-800',
-  SHIPPED: 'bg-indigo-100 text-indigo-800',
-  DELIVERED: 'bg-green-100 text-green-800',
-  CANCELLED: 'bg-red-100 text-red-800',
+  PENDING: 'border-yellow-200 bg-yellow-100/80 text-yellow-900',
+  CONFIRMED: 'border-sky-200 bg-sky-100/80 text-sky-900',
+  IN_PROGRESS: 'border-violet-200 bg-violet-100/80 text-violet-900',
+  READY: 'border-cyan-200 bg-cyan-100/80 text-cyan-900',
+  SHIPPED: 'border-indigo-200 bg-indigo-100/80 text-indigo-900',
+  DELIVERED: 'border-emerald-200 bg-emerald-100/80 text-emerald-900',
+  CANCELLED: 'border-rose-200 bg-rose-100/80 text-rose-900',
 }
 
 const paymentColors: Record<string, string> = {
-  UNPAID: 'bg-red-100 text-red-800',
-  PARTIALLY_PAID: 'bg-orange-100 text-orange-800',
-  PAID: 'bg-green-100 text-green-800',
-  REFUNDED: 'bg-gray-100 text-gray-800',
+  UNPAID: 'border-rose-200 bg-rose-100/80 text-rose-900',
+  PARTIALLY_PAID: 'border-amber-200 bg-amber-100/80 text-amber-900',
+  PAID: 'border-emerald-200 bg-emerald-100/80 text-emerald-900',
+  REFUNDED: 'border-stone-200 bg-stone-100/80 text-stone-800',
 }
 
 export function OrderList({
@@ -110,9 +110,10 @@ export function OrderList({
   return (
     <>
       <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className="rounded-[1.6rem] border border-border/80 bg-white/78 p-4 shadow-[0_18px_45px_rgba(34,48,51,0.06)]">
+      <div className="flex flex-col gap-4 sm:flex-row">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search by order number..."
             value={search}
@@ -130,7 +131,7 @@ export function OrderList({
             setStatus(e.target.value)
             handleFilter(search, e.target.value, payment)
           }}
-          className="h-10 px-3 py-2 border border-input bg-background rounded-md text-sm"
+          className="field-select sm:max-w-[220px]"
           data-testid="order-status-filter"
         >
           <option value="">All Statuses</option>
@@ -148,7 +149,7 @@ export function OrderList({
             setPayment(e.target.value)
             handleFilter(search, status, e.target.value)
           }}
-          className="h-10 px-3 py-2 border border-input bg-background rounded-md text-sm"
+          className="field-select sm:max-w-[220px]"
           data-testid="order-payment-filter"
         >
           <option value="">All Payments</option>
@@ -158,63 +159,64 @@ export function OrderList({
           <option value="REFUNDED">Refunded</option>
         </select>
       </div>
+      </div>
 
       {orders.length === 0 ? (
-        <Card className="p-12">
-          <div className="text-center">
-            <p className="text-gray-500">No orders found.</p>
-            <p className="text-sm text-gray-400 mt-1">Try adjusting your filters or create a new order.</p>
+        <Card className="empty-state">
+          <div>
+            <p className="text-base font-medium text-muted-foreground">No orders found.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Try adjusting your filters or create a new order.</p>
           </div>
         </Card>
       ) : (
-        <div className="bg-white rounded-lg border overflow-hidden">
+        <div className="data-table">
           <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b">
+            <table>
+              <thead>
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th>
                     Order
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th>
                     Customer
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th>
                     Date
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th>
                     Amount
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th>
                     Status
                   </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="text-center">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody>
                 {orders.map((order) => (
-                  <tr key={order.id} className="hover:bg-gray-50" data-testid={`order-row-${order.id}`}>
-                    <td className="px-6 py-4">
-                      <p className="font-medium text-gray-900">{order.orderNumber}</p>
-                      <p className="text-xs text-gray-500">{order.items.length} item(s)</p>
+                  <tr key={order.id} data-testid={`order-row-${order.id}`}>
+                    <td>
+                      <p className="font-medium text-foreground">{order.orderNumber}</p>
+                      <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{order.items.length} item(s)</p>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
+                    <td className="text-sm text-foreground">
                       {order.customer.name}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    <td className="text-sm text-muted-foreground">
                       {formatDate(order.orderDate)}
                     </td>
-                    <td className="px-6 py-4">
+                    <td>
                       <div className="text-sm">
-                        <p className="font-semibold text-gray-900">{formatCurrency(order.totalAmount)}</p>
-                        <p className="text-xs text-gray-500">Paid: {formatCurrency(order.paidAmount)}</p>
+                        <p className="font-semibold text-foreground">{formatCurrency(order.totalAmount)}</p>
+                        <p className="text-xs text-muted-foreground">Paid: {formatCurrency(order.paidAmount)}</p>
                         {order.pendingAmount > 0 && (
-                          <p className="text-xs text-red-600">Due: {formatCurrency(order.pendingAmount)}</p>
+                          <p className="text-xs text-destructive">Due: {formatCurrency(order.pendingAmount)}</p>
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td>
                       <div className="flex flex-col gap-1">
                         <Badge className={statusColors[order.orderStatus]}>
                           {order.orderStatus.replace('_', ' ')}
@@ -224,7 +226,7 @@ export function OrderList({
                         </Badge>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td>
                       <div className="flex items-center justify-center gap-2">
                         <Link href={`/orders/${order.id}`}>
                           <Button variant="ghost" size="sm" data-testid={`view-order-${order.id}`}>
@@ -243,7 +245,7 @@ export function OrderList({
                           disabled={deletingId === order.id}
                           data-testid={`delete-order-${order.id}`}
                         >
-                          <Trash2 className="h-4 w-4 text-red-600" />
+                          <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>
                     </td>

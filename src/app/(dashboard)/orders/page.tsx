@@ -43,8 +43,8 @@ export default async function OrdersPage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Orders</h1>
-          <p className="text-gray-600 mt-1">Manage customer orders and fulfillment</p>
+          <h1 className="page-title">Orders</h1>
+          <p className="page-copy">Manage customer orders and fulfillment</p>
         </div>
         <Link href="/orders/new">
           <Button data-testid="create-order-button">

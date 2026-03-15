@@ -21,8 +21,8 @@ export default async function PurchasesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Purchases</h1>
-          <p className="text-gray-600 mt-1">Manage raw material purchases</p>
+          <h1 className="page-title">Purchases</h1>
+          <p className="page-copy">Manage raw material purchases</p>
         </div>
         <Link href="/purchases/new">
           <Button data-testid="create-purchase-button">

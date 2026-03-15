@@ -30,8 +30,8 @@ export default async function NewOrderPage() {
       </div>
 
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Create New Order</h1>
-        <p className="text-gray-600 mt-1">Fill in the order details below</p>
+        <h1 className="page-title">Create New Order</h1>
+        <p className="page-copy">Fill in the order details below</p>
       </div>
 
       <OrderForm customers={customers} products={products} />

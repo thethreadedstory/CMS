@@ -1,11 +1,15 @@
 import './globals.css'
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { IBM_Plex_Sans } from 'next/font/google'
 import { ClerkProvider } from '@clerk/nextjs'
 import { NavigationProgress } from '@/components/navigation-progress'
 import { Toaster } from 'sonner'
 
-const inter = Inter({ subsets: ['latin'] })
+const ibmPlexSans = IBM_Plex_Sans({
+  subsets: ['latin'],
+  variable: '--font-sans',
+  weight: ['400', '500', '600', '700'],
+})
 
 export const metadata: Metadata = {
   title: 'Crochet Business Admin Panel',
@@ -20,7 +24,10 @@ export default function RootLayout({
   return (
     <ClerkProvider dynamic>
       <html lang="en" suppressHydrationWarning>
-        <body className={inter.className} suppressHydrationWarning>
+        <body
+          className={`${ibmPlexSans.variable} antialiased`}
+          suppressHydrationWarning
+        >
           <NavigationProgress />
           {children}
           <Toaster position="top-right" richColors />

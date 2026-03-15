@@ -36,8 +36,8 @@ export default async function OrderDetailPage({
     PENDING: 'bg-yellow-100 text-yellow-800',
     CONFIRMED: 'bg-blue-100 text-blue-800',
     IN_PROGRESS: 'bg-purple-100 text-purple-800',
-    READY: 'bg-cyan-100 text-cyan-800',
-    SHIPPED: 'bg-indigo-100 text-indigo-800',
+    READY: 'bg-cyan-100 text-cyan-900',
+    SHIPPED: 'bg-indigo-100 text-indigo-900',
     DELIVERED: 'bg-green-100 text-green-800',
     CANCELLED: 'bg-red-100 text-red-800',
   }
@@ -46,7 +46,7 @@ export default async function OrderDetailPage({
     UNPAID: 'bg-red-100 text-red-800',
     PARTIALLY_PAID: 'bg-orange-100 text-orange-800',
     PAID: 'bg-green-100 text-green-800',
-    REFUNDED: 'bg-gray-100 text-gray-800',
+    REFUNDED: 'border-stone-200 bg-stone-100/80 text-stone-800',
   }
 
   return (
@@ -68,8 +68,8 @@ export default async function OrderDetailPage({
 
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">{order.orderNumber}</h1>
-          <p className="text-gray-600 mt-1">{formatDate(order.orderDate)}</p>
+          <h1 className="page-title">{order.orderNumber}</h1>
+          <p className="page-copy">{formatDate(order.orderDate)}</p>
         </div>
         <div className="flex gap-2">
           <Badge className={statusColors[order.orderStatus]}>
@@ -94,30 +94,30 @@ export default async function OrderDetailPage({
                   className="flex items-center justify-between p-4 border rounded-lg"
                 >
                   <div className="flex-1">
-                    <p className="font-medium text-gray-900">{item.product.name}</p>
-                    <p className="text-sm text-gray-500">
+                    <p className="font-medium text-foreground">{item.product.name}</p>
+                    <p className="text-sm text-muted-foreground">
                       {formatCurrency(item.unitPrice)} × {item.quantity}
                     </p>
                   </div>
-                  <p className="font-semibold text-gray-900">{formatCurrency(item.total)}</p>
+                  <p className="font-semibold text-foreground">{formatCurrency(item.total)}</p>
                 </div>
               ))}
             </div>
 
             <div className="mt-6 space-y-2 pt-4 border-t">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Subtotal:</span>
+                <span className="text-muted-foreground">Subtotal:</span>
                 <span className="font-medium">{formatCurrency(order.subtotal)}</span>
               </div>
               {order.discount > 0 && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Discount:</span>
-                  <span className="font-medium text-red-600">-{formatCurrency(order.discount)}</span>
+                  <span className="text-muted-foreground">Discount:</span>
+                  <span className="font-medium text-destructive">-{formatCurrency(order.discount)}</span>
                 </div>
               )}
               {order.shippingCharge > 0 && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Shipping:</span>
+                  <span className="text-muted-foreground">Shipping:</span>
                   <span className="font-medium">+{formatCurrency(order.shippingCharge)}</span>
                 </div>
               )}
@@ -126,21 +126,21 @@ export default async function OrderDetailPage({
                 <span>{formatCurrency(order.totalAmount)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Paid:</span>
-                <span className="font-medium text-green-600">{formatCurrency(order.paidAmount)}</span>
+                <span className="text-muted-foreground">Paid:</span>
+                <span className="font-medium text-emerald-700">{formatCurrency(order.paidAmount)}</span>
               </div>
               {order.pendingAmount > 0 && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Pending:</span>
-                  <span className="font-medium text-red-600">{formatCurrency(order.pendingAmount)}</span>
+                  <span className="text-muted-foreground">Pending:</span>
+                  <span className="font-medium text-destructive">{formatCurrency(order.pendingAmount)}</span>
                 </div>
               )}
             </div>
 
             {order.notes && (
               <div className="mt-4 pt-4 border-t">
-                <p className="text-sm text-gray-600">Notes:</p>
-                <p className="text-gray-900 mt-1">{order.notes}</p>
+                <p className="text-sm text-muted-foreground">Notes:</p>
+                <p className="text-foreground mt-1">{order.notes}</p>
               </div>
             )}
           </CardContent>
@@ -153,31 +153,31 @@ export default async function OrderDetailPage({
             </CardHeader>
             <CardContent className="space-y-3">
               <div>
-                <p className="text-sm text-gray-600">Name</p>
+                <p className="text-sm text-muted-foreground">Name</p>
                 <Link 
                   href={`/customers/${order.customer.id}`}
-                  className="font-medium text-blue-600 hover:underline"
+                  className="font-medium text-sky-700 hover:underline"
                 >
                   {order.customer.name}
                 </Link>
               </div>
               {order.customer.phone && (
                 <div>
-                  <p className="text-sm text-gray-600">Phone</p>
-                  <p className="text-gray-900">{order.customer.phone}</p>
+                  <p className="text-sm text-muted-foreground">Phone</p>
+                  <p className="text-foreground">{order.customer.phone}</p>
                 </div>
               )}
               {order.customer.email && (
                 <div>
-                  <p className="text-sm text-gray-600">Email</p>
-                  <p className="text-gray-900">{order.customer.email}</p>
+                  <p className="text-sm text-muted-foreground">Email</p>
+                  <p className="text-foreground">{order.customer.email}</p>
                 </div>
               )}
               {order.customer.address && (
                 <div>
-                  <p className="text-sm text-gray-600">Address</p>
-                  <p className="text-gray-900">{order.customer.address}</p>
-                  {order.customer.city && <p className="text-gray-600">{order.customer.city}</p>}
+                  <p className="text-sm text-muted-foreground">Address</p>
+                  <p className="text-foreground">{order.customer.address}</p>
+                  {order.customer.city && <p className="text-muted-foreground">{order.customer.city}</p>}
                 </div>
               )}
             </CardContent>
@@ -191,20 +191,20 @@ export default async function OrderDetailPage({
             </CardHeader>
             <CardContent>
               {order.payments.length === 0 ? (
-                <p className="text-sm text-gray-500">No payments recorded</p>
+                <p className="text-sm text-muted-foreground">No payments recorded</p>
               ) : (
                 <div className="space-y-3">
                   {order.payments.map((payment) => (
-                    <div key={payment.id} className="p-3 bg-gray-50 rounded-lg">
+                    <div key={payment.id} className="p-3 bg-[hsl(var(--surface-soft))]/60 rounded-lg">
                       <div className="flex justify-between items-start">
                         <div>
-                          <p className="font-medium text-gray-900">{formatCurrency(payment.amount)}</p>
-                          <p className="text-sm text-gray-600">{formatDate(payment.paymentDate)}</p>
-                          <p className="text-xs text-gray-500">{payment.paymentMethod}</p>
+                          <p className="font-medium text-foreground">{formatCurrency(payment.amount)}</p>
+                          <p className="text-sm text-muted-foreground">{formatDate(payment.paymentDate)}</p>
+                          <p className="text-xs text-muted-foreground">{payment.paymentMethod}</p>
                         </div>
                       </div>
                       {payment.notes && (
-                        <p className="text-xs text-gray-600 mt-2">{payment.notes}</p>
+                        <p className="text-xs text-muted-foreground mt-2">{payment.notes}</p>
                       )}
                     </div>
                   ))}

@@ -29,71 +29,77 @@ export function DashboardStats({ stats }: StatsProps) {
       title: 'Total Sales',
       value: formatCurrency(stats.totalSales),
       icon: TrendingUp,
-      color: 'text-green-600',
-      bgColor: 'bg-green-50',
+      color: 'text-emerald-800',
+      bgColor: 'bg-emerald-100/90',
     },
     {
       title: 'Total Purchases',
       value: formatCurrency(stats.totalPurchases),
       icon: TrendingDown,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-50',
+      color: 'text-amber-800',
+      bgColor: 'bg-amber-100/90',
     },
     {
       title: 'Total Profit',
       value: formatCurrency(stats.totalProfit),
       icon: DollarSign,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
+      color: 'text-teal-800',
+      bgColor: 'bg-teal-100/90',
     },
     {
       title: 'Pending Payments',
       value: formatCurrency(stats.pendingPayments),
       icon: AlertCircle,
-      color: 'text-red-600',
-      bgColor: 'bg-red-50',
+      color: 'text-rose-800',
+      bgColor: 'bg-rose-100/90',
     },
     {
       title: 'Total Orders',
       value: stats.totalOrders.toString(),
       icon: ShoppingCart,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50',
+      color: 'text-cyan-800',
+      bgColor: 'bg-cyan-100/90',
     },
     {
       title: 'Total Customers',
       value: stats.totalCustomers.toString(),
       icon: Users,
-      color: 'text-indigo-600',
-      bgColor: 'bg-indigo-50',
+      color: 'text-sky-800',
+      bgColor: 'bg-sky-100/90',
     },
     {
       title: 'Total Products',
       value: stats.totalProducts.toString(),
       icon: Package,
-      color: 'text-teal-600',
-      bgColor: 'bg-teal-50',
+      color: 'text-violet-800',
+      bgColor: 'bg-violet-100/90',
     },
     {
       title: 'Low Stock Items',
       value: stats.lowStockProductsCount.toString(),
       icon: AlertCircle,
-      color: 'text-yellow-600',
-      bgColor: 'bg-yellow-50',
+      color: 'text-orange-800',
+      bgColor: 'bg-orange-100/90',
     },
   ]
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {statCards.map((stat, index) => (
-        <Card key={index} data-testid={`stat-card-${stat.title.toLowerCase().replace(/\s+/g, '-')}`}>
+        <Card
+          key={index}
+          className="metric-card"
+          data-testid={`stat-card-${stat.title.toLowerCase().replace(/\s+/g, '-')}`}
+        >
           <CardContent className="p-6">
-            <div className="flex items-center justify-between">
+            <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                <p className="text-2xl font-bold text-gray-900 mt-2">{stat.value}</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                  {stat.title}
+                </p>
+                <p className="mt-3 text-3xl font-semibold text-foreground">{stat.value}</p>
               </div>
-              <div className={`${stat.bgColor} p-3 rounded-lg`}>
+              <div className={`${stat.bgColor} rounded-2xl p-3 shadow-inner`}>
                 <stat.icon className={`h-6 w-6 ${stat.color}`} />
               </div>
             </div>

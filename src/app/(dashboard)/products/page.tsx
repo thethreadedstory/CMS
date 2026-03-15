@@ -45,8 +45,8 @@ export default async function ProductsPage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Products</h1>
-          <p className="text-gray-600 mt-1">Manage your product catalog</p>
+          <h1 className="page-title">Products</h1>
+          <p className="page-copy">Manage your product catalog</p>
         </div>
         <div className="flex gap-3">
           <Link href="/products/categories">

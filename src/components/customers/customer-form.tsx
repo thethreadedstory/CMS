@@ -53,7 +53,7 @@ export function CustomerForm({ customer }: CustomerFormProps) {
       <CardContent className="p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
-            <div className="bg-red-50 text-red-600 p-4 rounded-lg text-sm">
+            <div className="rounded-[1.4rem] border border-rose-200 bg-rose-100/70 p-4 text-sm text-destructive">
               {error}
             </div>
           )}
@@ -128,7 +128,7 @@ export function CustomerForm({ customer }: CustomerFormProps) {
               rows={4}
               defaultValue={customer?.notes || ''}
               placeholder="Add any additional notes..."
-              className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="field-textarea"
               data-testid="customer-notes-input"
             />
           </div>

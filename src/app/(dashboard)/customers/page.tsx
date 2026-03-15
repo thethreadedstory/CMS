@@ -46,8 +46,8 @@ export default async function CustomersPage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Customers</h1>
-          <p className="text-gray-600 mt-1">Manage your customer database</p>
+          <h1 className="page-title">Customers</h1>
+          <p className="page-copy">Manage your customer database</p>
         </div>
         <Link href="/customers/new">
           <Button data-testid="add-customer-button">

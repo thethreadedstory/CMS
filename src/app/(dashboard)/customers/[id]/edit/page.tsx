@@ -30,8 +30,8 @@ export default async function EditCustomerPage({
       </div>
 
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Edit Customer</h1>
-        <p className="text-gray-600 mt-1">Update customer details</p>
+        <h1 className="page-title">Edit Customer</h1>
+        <p className="page-copy">Update customer details</p>
       </div>
 
       <CustomerForm customer={customer} />

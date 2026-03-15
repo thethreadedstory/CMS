@@ -22,8 +22,8 @@ export default async function InventoryPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Raw Materials</h1>
-          <p className="text-gray-600 mt-1">Manage your inventory and stock levels</p>
+          <h1 className="page-title">Raw Materials</h1>
+          <p className="page-copy">Manage your inventory and stock levels</p>
         </div>
         <Link href="/inventory/new">
           <Button data-testid="add-material-button">

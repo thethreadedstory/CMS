@@ -23,9 +23,9 @@ export function SupplierList({ suppliers }: SupplierListProps) {
   return (
     <div className="space-y-4">
       {suppliers.length === 0 ? (
-        <Card className="p-12">
-          <div className="text-center">
-            <p className="text-gray-500">No suppliers added yet.</p>
+        <Card className="empty-state">
+          <div>
+            <p className="text-base font-medium text-muted-foreground">No suppliers added yet.</p>
           </div>
         </Card>
       ) : (
@@ -33,30 +33,30 @@ export function SupplierList({ suppliers }: SupplierListProps) {
           {suppliers.map((supplier) => (
             <Card key={supplier.id} className="overflow-hidden">
               <div className="p-6">
-                <h3 className="font-semibold text-lg text-gray-900 mb-2">{supplier.name}</h3>
+                <h3 className="mb-2 text-lg font-semibold text-foreground">{supplier.name}</h3>
                 
                 {supplier.contactPerson && (
-                  <p className="text-sm text-gray-600">Contact: {supplier.contactPerson}</p>
+                  <p className="text-sm text-muted-foreground">Contact: {supplier.contactPerson}</p>
                 )}
                 
                 {supplier.phone && (
-                  <p className="text-sm text-gray-600 mt-1">{supplier.phone}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{supplier.phone}</p>
                 )}
                 
                 {supplier.email && (
-                  <p className="text-sm text-gray-600 mt-1">{supplier.email}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{supplier.email}</p>
                 )}
                 
                 {supplier.address && (
-                  <p className="text-sm text-gray-500 mt-2">{supplier.address}</p>
+                  <p className="mt-2 text-sm text-muted-foreground">{supplier.address}</p>
                 )}
 
-                <div className="flex gap-4 mt-4 pt-4 border-t text-sm text-gray-600">
+                <div className="mt-4 flex gap-4 border-t border-border/70 pt-4 text-sm text-muted-foreground">
                   <div>
-                    <span className="font-medium">{supplier._count.materials}</span> Materials
+                    <span className="font-medium text-foreground">{supplier._count.materials}</span> Materials
                   </div>
                   <div>
-                    <span className="font-medium">{supplier._count.purchases}</span> Purchases
+                    <span className="font-medium text-foreground">{supplier._count.purchases}</span> Purchases
                   </div>
                 </div>
               </div>

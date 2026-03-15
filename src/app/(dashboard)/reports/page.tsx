@@ -2,97 +2,75 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FileText, TrendingUp, DollarSign, Package } from 'lucide-react'
 
 export default function ReportsPage() {
+  const reportCards = [
+    {
+      title: 'Sales Report',
+      description: 'Revenue and sales analysis',
+      icon: TrendingUp,
+      iconClass: 'text-emerald-800',
+      iconBg: 'bg-emerald-100/90',
+    },
+    {
+      title: 'Purchase Report',
+      description: 'Expenses and purchases',
+      icon: DollarSign,
+      iconClass: 'text-amber-800',
+      iconBg: 'bg-amber-100/90',
+    },
+    {
+      title: 'Profit Report',
+      description: 'Profit margins and analysis',
+      icon: FileText,
+      iconClass: 'text-teal-800',
+      iconBg: 'bg-teal-100/90',
+    },
+    {
+      title: 'Inventory Report',
+      description: 'Stock levels and valuation',
+      icon: Package,
+      iconClass: 'text-violet-800',
+      iconBg: 'bg-violet-100/90',
+    },
+    {
+      title: 'Pending Payments',
+      description: 'Outstanding dues',
+      icon: FileText,
+      iconClass: 'text-rose-800',
+      iconBg: 'bg-rose-100/90',
+    },
+    {
+      title: 'Customer Report',
+      description: 'Customer-wise sales',
+      icon: TrendingUp,
+      iconClass: 'text-sky-800',
+      iconBg: 'bg-sky-100/90',
+    },
+  ]
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Reports</h1>
-        <p className="text-gray-600 mt-1">Business analytics and reports</p>
+      <div className="space-y-2">
+        <span className="section-label">Insights</span>
+        <h1 className="page-title">Reports</h1>
+        <p className="page-copy">Business analytics and reports</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-green-50 rounded-lg">
-                <TrendingUp className="h-6 w-6 text-green-600" />
+        {reportCards.map((report) => (
+          <Card key={report.title} className="cursor-pointer transition-transform duration-200 hover:-translate-y-1">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-4">
+                <div className={`rounded-2xl p-3 shadow-inner ${report.iconBg}`}>
+                  <report.icon className={`h-6 w-6 ${report.iconClass}`} />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-foreground">{report.title}</h3>
+                  <p className="text-sm text-muted-foreground">{report.description}</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">Sales Report</h3>
-                <p className="text-sm text-gray-600">Revenue and sales analysis</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-orange-50 rounded-lg">
-                <DollarSign className="h-6 w-6 text-orange-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">Purchase Report</h3>
-                <p className="text-sm text-gray-600">Expenses and purchases</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-blue-50 rounded-lg">
-                <FileText className="h-6 w-6 text-blue-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">Profit Report</h3>
-                <p className="text-sm text-gray-600">Profit margins and analysis</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-purple-50 rounded-lg">
-                <Package className="h-6 w-6 text-purple-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">Inventory Report</h3>
-                <p className="text-sm text-gray-600">Stock levels and valuation</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-red-50 rounded-lg">
-                <FileText className="h-6 w-6 text-red-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">Pending Payments</h3>
-                <p className="text-sm text-gray-600">Outstanding dues</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-indigo-50 rounded-lg">
-                <TrendingUp className="h-6 w-6 text-indigo-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">Customer Report</h3>
-                <p className="text-sm text-gray-600">Customer-wise sales</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       <Card>
@@ -100,7 +78,7 @@ export default function ReportsPage() {
           <CardTitle>Coming Soon</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Detailed reports with date range filters and export functionality will be available soon.
           </p>
         </CardContent>

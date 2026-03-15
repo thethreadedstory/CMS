@@ -116,9 +116,10 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600 mt-1">Welcome to your crochet business admin panel</p>
+      <div className="space-y-2">
+        <span className="section-label">Overview</span>
+        <h1 className="page-title">Dashboard</h1>
+        <p className="page-copy">A quick read on sales, customers, production flow, and stock pressure across the business.</p>
       </div>
 
       <DashboardStats stats={stats} />

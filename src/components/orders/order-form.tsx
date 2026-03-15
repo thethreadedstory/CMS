@@ -138,7 +138,7 @@ export function OrderForm({ customers, products }: OrderFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="bg-red-50 text-red-600 p-4 rounded-lg text-sm">
+        <div className="rounded-[1.4rem] border border-rose-200 bg-rose-100/70 p-4 text-sm text-destructive">
           {error}
         </div>
       )}
@@ -158,7 +158,7 @@ export function OrderForm({ customers, products }: OrderFormProps) {
                 value={customerId}
                 onChange={(e) => setCustomerId(e.target.value)}
                 required
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                className="field-select"
                 data-testid="order-customer-select"
               >
                 <option value="">Select a customer</option>
@@ -196,7 +196,7 @@ export function OrderForm({ customers, products }: OrderFormProps) {
         </CardHeader>
         <CardContent>
           {items.length === 0 ? (
-            <p className="text-sm text-gray-500">No items added. Click "Add Item" to add products to this order.</p>
+            <p className="text-sm text-muted-foreground">No items added. Click "Add Item" to add products to this order.</p>
           ) : (
             <div className="space-y-4">
               {items.map((item, index) => {
@@ -204,9 +204,9 @@ export function OrderForm({ customers, products }: OrderFormProps) {
                 const itemTotal = item.quantity * item.unitPrice
                 
                 return (
-                  <div key={index} className="p-4 border rounded-lg space-y-4">
+                  <div key={index} className="space-y-4 rounded-[1.4rem] border border-border/75 bg-[hsl(var(--surface-soft))]/55 p-4">
                     <div className="flex items-center justify-between">
-                      <h4 className="font-medium text-gray-900">Item {index + 1}</h4>
+                      <h4 className="font-medium text-foreground">Item {index + 1}</h4>
                       <Button
                         type="button"
                         variant="ghost"
@@ -223,7 +223,7 @@ export function OrderForm({ customers, products }: OrderFormProps) {
                         <select
                           value={item.productId}
                           onChange={(e) => updateItem(index, 'productId', e.target.value)}
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                          className="field-select"
                           required
                         >
                           <option value="">Select product</option>
@@ -234,7 +234,7 @@ export function OrderForm({ customers, products }: OrderFormProps) {
                           ))}
                         </select>
                         {product && product.currentStock < item.quantity && (
-                          <p className="text-xs text-red-600 mt-1">Insufficient stock!</p>
+                          <p className="mt-1 text-xs text-destructive">Insufficient stock!</p>
                         )}
                       </div>
                       
@@ -262,9 +262,9 @@ export function OrderForm({ customers, products }: OrderFormProps) {
                       </div>
                     </div>
                     
-                    <div className="flex justify-between items-center pt-2 border-t">
-                      <span className="text-sm text-gray-600">Item Total:</span>
-                      <span className="font-semibold text-gray-900">{formatCurrency(itemTotal)}</span>
+                    <div className="flex items-center justify-between border-t border-border/70 pt-2">
+                      <span className="text-sm text-muted-foreground">Item Total:</span>
+                      <span className="font-semibold text-foreground">{formatCurrency(itemTotal)}</span>
                     </div>
                   </div>
                 )
@@ -324,39 +324,39 @@ export function OrderForm({ customers, products }: OrderFormProps) {
             </div>
           </div>
 
-          <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
+          <div className="panel-muted space-y-3">
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Subtotal:</span>
+              <span className="text-muted-foreground">Subtotal:</span>
               <span className="font-medium">{formatCurrency(subtotal)}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Discount:</span>
-              <span className="font-medium text-red-600">-{formatCurrency(discount)}</span>
+              <span className="text-muted-foreground">Discount:</span>
+              <span className="font-medium text-destructive">-{formatCurrency(discount)}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Shipping:</span>
+              <span className="text-muted-foreground">Shipping:</span>
               <span className="font-medium">+{formatCurrency(shippingCharge)}</span>
             </div>
-            <div className="flex justify-between text-lg font-bold pt-2 border-t">
+            <div className="flex justify-between border-t border-border/70 pt-2 text-lg font-bold">
               <span>Total:</span>
               <span>{formatCurrency(total)}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Paid:</span>
-              <span className="font-medium text-green-600">{formatCurrency(paidAmount)}</span>
+              <span className="text-muted-foreground">Paid:</span>
+              <span className="font-medium text-emerald-700">{formatCurrency(paidAmount)}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Pending:</span>
-              <span className={`font-medium ${pending > 0 ? 'text-red-600' : 'text-gray-600'}`}>
+              <span className="text-muted-foreground">Pending:</span>
+              <span className={`font-medium ${pending > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
                 {formatCurrency(pending)}
               </span>
             </div>
-            <div className="flex justify-between text-sm pt-2 border-t">
-              <span className="text-gray-600">Payment Status:</span>
+            <div className="flex justify-between border-t border-border/70 pt-2 text-sm">
+              <span className="text-muted-foreground">Payment Status:</span>
               <span className={`font-semibold ${
-                paymentStatus === 'PAID' ? 'text-green-600' : 
-                paymentStatus === 'PARTIALLY_PAID' ? 'text-orange-600' : 
-                'text-red-600'
+                paymentStatus === 'PAID' ? 'text-emerald-700' :
+                paymentStatus === 'PARTIALLY_PAID' ? 'text-amber-700' :
+                'text-destructive'
               }`}>
                 {paymentStatus.replace('_', ' ')}
               </span>
@@ -371,7 +371,7 @@ export function OrderForm({ customers, products }: OrderFormProps) {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Add any notes about this order..."
-              className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              className="field-textarea"
               data-testid="order-notes-input"
             />
           </div>

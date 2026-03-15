@@ -38,8 +38,8 @@ export default async function EditProductPage({
       </div>
 
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Edit Product</h1>
-        <p className="text-gray-600 mt-1">Update product details</p>
+        <h1 className="page-title">Edit Product</h1>
+        <p className="page-copy">Update product details</p>
       </div>
 
       <ProductForm product={product} categories={categories} />

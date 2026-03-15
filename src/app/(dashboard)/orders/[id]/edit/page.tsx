@@ -20,15 +20,15 @@ export default function EditOrderPage({
       </div>
 
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Edit Order</h1>
-        <p className="text-gray-600 mt-1">Update order details</p>
+        <h1 className="page-title">Edit Order</h1>
+        <p className="page-copy">Update order details</p>
       </div>
 
       <Card>
         <CardContent className="p-12">
           <div className="text-center space-y-4">
-            <p className="text-gray-600">Order editing functionality coming soon.</p>
-            <p className="text-sm text-gray-500">
+            <p className="text-muted-foreground">Order editing functionality coming soon.</p>
+            <p className="text-sm text-muted-foreground">
               For now, you can view the order details and update the status from the detail page.
             </p>
             <Link href={`/orders/${params.id}`}>

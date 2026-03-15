@@ -68,9 +68,10 @@ export function CustomerList({ customers, initialSearch }: CustomerListProps) {
   return (
     <>
       <div className="space-y-4">
+        <div className="rounded-[1.6rem] border border-border/80 bg-white/78 p-4 shadow-[0_18px_45px_rgba(34,48,51,0.06)]">
         <div className="flex items-center gap-4">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Search by name, phone, or email..."
               value={search}
@@ -80,67 +81,68 @@ export function CustomerList({ customers, initialSearch }: CustomerListProps) {
             />
           </div>
         </div>
+        </div>
 
         {customers.length === 0 ? (
-          <Card className="p-12">
-            <div className="text-center">
-              <p className="text-gray-500">No customers found.</p>
-              <p className="text-sm text-gray-400 mt-1">Try adjusting your search or add a new customer.</p>
+          <Card className="empty-state">
+            <div>
+              <p className="text-base font-medium text-muted-foreground">No customers found.</p>
+              <p className="mt-1 text-sm text-muted-foreground">Try adjusting your search or add a new customer.</p>
             </div>
           </Card>
         ) : (
-          <div className="bg-white rounded-lg border overflow-hidden">
+          <div className="data-table">
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b">
+              <table>
+                <thead>
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th>
                       Customer
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th>
                       Contact
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th>
                       Orders
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th>
                       Total Spent
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th>
                       Pending
                     </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="text-center">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody>
                   {customers.map((customer) => (
-                    <tr key={customer.id} className="hover:bg-gray-50" data-testid={`customer-row-${customer.id}`}>
-                      <td className="px-6 py-4">
+                    <tr key={customer.id} data-testid={`customer-row-${customer.id}`}>
+                      <td>
                         <div>
-                          <p className="font-medium text-gray-900">{customer.name}</p>
-                          {customer.city && <p className="text-sm text-gray-500">{customer.city}</p>}
+                          <p className="font-medium text-foreground">{customer.name}</p>
+                          {customer.city && <p className="text-sm text-muted-foreground">{customer.city}</p>}
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td>
                         <div className="text-sm">
-                          {customer.phone && <p className="text-gray-900">{customer.phone}</p>}
-                          {customer.email && <p className="text-gray-500">{customer.email}</p>}
+                          {customer.phone && <p className="text-foreground">{customer.phone}</p>}
+                          {customer.email && <p className="text-muted-foreground">{customer.email}</p>}
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
+                      <td className="text-sm text-foreground">
                         {customer.orderCount}
                       </td>
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                      <td className="text-sm font-medium text-foreground">
                         {formatCurrency(customer.totalSpent)}
                       </td>
-                      <td className="px-6 py-4 text-sm">
-                        <span className={customer.pendingAmount > 0 ? 'text-red-600 font-medium' : 'text-gray-500'}>
+                      <td className="text-sm">
+                        <span className={customer.pendingAmount > 0 ? 'font-medium text-destructive' : 'text-muted-foreground'}>
                           {formatCurrency(customer.pendingAmount)}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td>
                         <div className="flex items-center justify-center gap-2">
                           <Link href={`/customers/${customer.id}`}>
                             <Button variant="ghost" size="sm" data-testid={`view-customer-${customer.id}`}>
@@ -159,7 +161,7 @@ export function CustomerList({ customers, initialSearch }: CustomerListProps) {
                             disabled={deletingId === customer.id}
                             data-testid={`delete-customer-${customer.id}`}
                           >
-                            <Trash2 className="h-4 w-4 text-red-600" />
+                            <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
                         </div>
                       </td>

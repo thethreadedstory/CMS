@@ -26,8 +26,8 @@ export default async function CategoriesPage() {
       </div>
 
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Product Categories</h1>
-        <p className="text-gray-600 mt-1">Organize your products into categories</p>
+        <h1 className="page-title">Product Categories</h1>
+        <p className="page-copy">Organize your products into categories</p>
       </div>
 
       <CategoryManager categories={categories} />

@@ -4,26 +4,31 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 210 20% 97%;
+    --foreground: 222 27% 16%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 222 27% 16%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
+    --popover-foreground: 222 27% 16%;
+    --primary: 217 61% 43%;
     --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
+    --secondary: 210 20% 94%;
+    --secondary-foreground: 222 27% 18%;
+    --muted: 210 18% 94%;
+    --muted-foreground: 215 14% 42%;
+    --accent: 214 32% 92%;
+    --accent-foreground: 222 27% 18%;
+    --destructive: 0 63% 47%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+    --border: 214 18% 86%;
+    --input: 214 18% 86%;
+    --ring: 217 61% 43%;
+    --radius: 0.75rem;
+    --sidebar: 222 31% 16%;
+    --sidebar-foreground: 210 33% 96%;
+    --sidebar-border: 222 18% 24%;
+    --surface-strong: 0 0% 100%;
+    --surface-soft: 210 20% 95%;
   }
 }
 
@@ -31,8 +36,128 @@
   * {
     @apply border-border;
   }
+
+  *::selection {
+    background: hsl(var(--primary) / 0.18);
+    color: hsl(var(--foreground));
+  }
+
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-sans), sans-serif;
+    min-height: 100vh;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-sans), sans-serif;
+    letter-spacing: -0.02em;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    transition:
+      background-color 180ms ease,
+      border-color 180ms ease,
+      color 180ms ease,
+      box-shadow 180ms ease,
+      transform 180ms ease;
+  }
+
+  select {
+    appearance: none;
+    background-image:
+      linear-gradient(45deg, transparent 50%, hsl(var(--muted-foreground)) 50%),
+      linear-gradient(135deg, hsl(var(--muted-foreground)) 50%, transparent 50%);
+    background-position:
+      calc(100% - 20px) calc(50% - 3px),
+      calc(100% - 14px) calc(50% - 3px);
+    background-size: 6px 6px, 6px 6px;
+    background-repeat: no-repeat;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.05);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(15, 23, 42, 0.2);
+    border-radius: 999px;
+  }
+}
+
+@layer components {
+  .page-title {
+    @apply text-3xl font-semibold text-foreground sm:text-[2rem];
+  }
+
+  .page-copy {
+    @apply mt-1 max-w-2xl text-sm leading-6 text-muted-foreground;
+  }
+
+  .section-label {
+    @apply inline-flex items-center rounded-md border border-border bg-white px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground;
+  }
+
+  .field-select {
+    @apply h-10 w-full rounded-md border border-border bg-white px-3 py-2 pr-10 text-sm text-foreground outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/20;
+  }
+
+  .field-textarea {
+    @apply flex min-h-[120px] w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-foreground outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .panel-muted {
+    @apply rounded-lg border border-border bg-[hsl(var(--surface-soft))] p-4;
+  }
+
+  .empty-state {
+    @apply p-12 text-center;
+  }
+
+  .data-table {
+    @apply overflow-hidden rounded-lg border border-border bg-white;
+  }
+
+  .data-table table {
+    @apply w-full min-w-[720px];
+  }
+
+  .data-table thead {
+    @apply bg-[hsl(var(--surface-soft))];
+  }
+
+  .data-table thead tr {
+    @apply border-b border-border/80;
+  }
+
+  .data-table th {
+    @apply px-5 py-3 text-left text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground;
+  }
+
+  .data-table td {
+    @apply px-5 py-4 align-middle;
+  }
+
+  .data-table tbody {
+    @apply divide-y divide-border/60;
+  }
+
+  .data-table tbody tr {
+    @apply transition-colors duration-150 hover:bg-[hsl(var(--surface-soft))]/70;
+  }
+
+  .metric-card {
+    @apply relative overflow-hidden rounded-lg border border-border bg-white;
   }
 }
 
@@ -42,7 +167,7 @@
 }
 
 #nprogress .bar {
-  background: #3b82f6 !important;
+  background: #2d5fb8 !important;
   position: fixed;
   z-index: 9999;
   top: 0;
@@ -57,7 +182,7 @@
   right: 0px;
   width: 100px;
   height: 100%;
-  box-shadow: 0 0 10px #3b82f6, 0 0 5px #3b82f6;
+  box-shadow: 0 0 10px #2d5fb8, 0 0 5px #2d5fb8;
   opacity: 1.0;
   transform: rotate(3deg) translate(0px, -4px);
 }

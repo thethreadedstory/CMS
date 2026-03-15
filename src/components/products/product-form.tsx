@@ -92,7 +92,7 @@ export function ProductForm({ product, categories }: ProductFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="bg-red-50 text-red-600 p-4 rounded-lg text-sm">
+        <div className="rounded-[1.4rem] border border-rose-200 bg-rose-100/70 p-4 text-sm text-destructive">
           {error}
         </div>
       )}
@@ -137,7 +137,7 @@ export function ProductForm({ product, categories }: ProductFormProps) {
                 id="categoryId"
                 name="categoryId"
                 defaultValue={product?.categoryId || ''}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="field-select"
                 data-testid="product-category-select"
               >
                 <option value="">Select a category</option>
@@ -155,7 +155,7 @@ export function ProductForm({ product, categories }: ProductFormProps) {
                 id="isActive"
                 name="isActive"
                 defaultValue={product?.isActive !== false ? 'true' : 'false'}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="field-select"
                 data-testid="product-status-select"
               >
                 <option value="true">Active</option>
@@ -172,7 +172,7 @@ export function ProductForm({ product, categories }: ProductFormProps) {
               rows={3}
               defaultValue={product?.description || ''}
               placeholder="Enter product description..."
-              className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="field-textarea"
               data-testid="product-description-input"
             />
           </div>
@@ -256,7 +256,7 @@ export function ProductForm({ product, categories }: ProductFormProps) {
               rows={3}
               defaultValue={product?.notes || ''}
               placeholder="Add any additional notes..."
-              className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="field-textarea"
               data-testid="product-notes-input"
             />
           </div>
@@ -275,13 +275,13 @@ export function ProductForm({ product, categories }: ProductFormProps) {
         </CardHeader>
         <CardContent>
           {variants.length === 0 ? (
-            <p className="text-sm text-gray-500">No variants added. Click "Add Variant" to create size, color, or style options.</p>
+            <p className="text-sm text-muted-foreground">No variants added. Click "Add Variant" to create size, color, or style options.</p>
           ) : (
             <div className="space-y-4">
               {variants.map((variant, index) => (
-                <div key={index} className="p-4 border rounded-lg space-y-4">
+                <div key={index} className="space-y-4 rounded-[1.4rem] border border-border/75 bg-[hsl(var(--surface-soft))]/55 p-4">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-medium text-gray-900">Variant {index + 1}</h4>
+                    <h4 className="font-medium text-foreground">Variant {index + 1}</h4>
                     <Button
                       type="button"
                       variant="ghost"

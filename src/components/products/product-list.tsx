@@ -80,9 +80,10 @@ export function ProductList({
   return (
     <>
       <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="rounded-[1.6rem] border border-border/80 bg-white/78 p-4 shadow-[0_18px_45px_rgba(34,48,51,0.06)]">
+        <div className="flex flex-col gap-4 sm:flex-row">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Search by name or SKU..."
               value={search}
@@ -100,7 +101,7 @@ export function ProductList({
               setCategory(e.target.value)
               handleFilter(search, e.target.value)
             }}
-            className="h-10 px-3 py-2 border border-input bg-background rounded-md text-sm"
+            className="field-select sm:max-w-[220px]"
             data-testid="product-category-filter"
           >
             <option value="">All Categories</option>
@@ -111,81 +112,82 @@ export function ProductList({
             ))}
           </select>
         </div>
+        </div>
 
         {products.length === 0 ? (
-          <Card className="p-12">
-            <div className="text-center">
-              <p className="text-gray-500">No products found.</p>
-              <p className="text-sm text-gray-400 mt-1">Try adjusting your filters or add a new product.</p>
+          <Card className="empty-state">
+            <div>
+              <p className="text-base font-medium text-muted-foreground">No products found.</p>
+              <p className="mt-1 text-sm text-muted-foreground">Try adjusting your filters or add a new product.</p>
             </div>
           </Card>
         ) : (
-          <div className="bg-white rounded-lg border overflow-hidden">
+          <div className="data-table">
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b">
+              <table>
+                <thead>
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th>
                       Product
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th>
                       Category
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th>
                       Price
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th>
                       Stock
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th>
                       Status
                     </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="text-center">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody>
                   {products.map((product) => {
                     const isLowStock = product.currentStock <= product.lowStockAlert
                     const profit = product.sellingPrice - product.costPrice
                     const profitMargin = ((profit / product.sellingPrice) * 100).toFixed(1)
 
                     return (
-                      <tr key={product.id} className="hover:bg-gray-50" data-testid={`product-row-${product.id}`}>
-                        <td className="px-6 py-4">
+                      <tr key={product.id} data-testid={`product-row-${product.id}`}>
+                        <td>
                           <div>
-                            <p className="font-medium text-gray-900">{product.name}</p>
-                            <p className="text-sm text-gray-500">SKU: {product.sku}</p>
+                            <p className="font-medium text-foreground">{product.name}</p>
+                            <p className="text-sm text-muted-foreground">SKU: {product.sku}</p>
                             {product.variants.length > 0 && (
-                              <p className="text-xs text-gray-400 mt-1">{product.variants.length} variant(s)</p>
+                              <p className="mt-1 text-xs uppercase tracking-[0.18em] text-muted-foreground">{product.variants.length} variant(s)</p>
                             )}
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">
+                        <td className="text-sm text-muted-foreground">
                           {product.category?.name || '-'}
                         </td>
-                        <td className="px-6 py-4">
+                        <td>
                           <div className="text-sm">
-                            <p className="font-semibold text-gray-900">{formatCurrency(product.sellingPrice)}</p>
-                            <p className="text-gray-500">Cost: {formatCurrency(product.costPrice)}</p>
-                            <p className="text-xs text-green-600">Margin: {profitMargin}%</p>
+                            <p className="font-semibold text-foreground">{formatCurrency(product.sellingPrice)}</p>
+                            <p className="text-muted-foreground">Cost: {formatCurrency(product.costPrice)}</p>
+                            <p className="text-xs text-emerald-700">Margin: {profitMargin}%</p>
                           </div>
                         </td>
-                        <td className="px-6 py-4">
+                        <td>
                           <div className="flex items-center gap-2">
-                            <span className={`font-medium ${isLowStock ? 'text-red-600' : 'text-gray-900'}`}>
+                            <span className={`font-medium ${isLowStock ? 'text-destructive' : 'text-foreground'}`}>
                               {product.currentStock}
                             </span>
-                            {isLowStock && <AlertCircle className="h-4 w-4 text-red-600" />}
+                            {isLowStock && <AlertCircle className="h-4 w-4 text-destructive" />}
                           </div>
                         </td>
-                        <td className="px-6 py-4">
+                        <td>
                           <Badge variant={product.isActive ? 'default' : 'secondary'}>
                             {product.isActive ? 'Active' : 'Inactive'}
                           </Badge>
                         </td>
-                        <td className="px-6 py-4">
+                        <td>
                           <div className="flex items-center justify-center gap-2">
                             <Link href={`/products/${product.id}`}>
                               <Button variant="ghost" size="sm" data-testid={`view-product-${product.id}`}>
@@ -204,7 +206,7 @@ export function ProductList({
                               disabled={deletingId === product.id}
                               data-testid={`delete-product-${product.id}`}
                             >
-                              <Trash2 className="h-4 w-4 text-red-600" />
+                              <Trash2 className="h-4 w-4 text-destructive" />
                             </Button>
                           </div>
                         </td>
