@@ -20,8 +20,8 @@ export default async function DashboardPage() {
     totalOrders,
     totalCustomers,
     totalProducts,
-    lowStockProducts,
-    lowStockMaterials,
+    allProducts,
+    allMaterials,
     recentOrders,
     ordersByStatus,
   ] = await Promise.all([
@@ -53,21 +53,25 @@ export default async function DashboardPage() {
     prisma.customer.count(),
     // Total Products
     prisma.product.count({ where: { isActive: true } }),
-    // Low Stock Products
+    // All Products for low stock check
     prisma.product.findMany({
-      where: {
-        currentStock: { lte: prisma.product.fields.lowStockAlert },
-        isActive: true,
+      where: { isActive: true },
+      select: {
+        id: true,
+        name: true,
+        currentStock: true,
+        lowStockAlert: true,
       },
-      take: 5,
       orderBy: { currentStock: 'asc' },
     }),
-    // Low Stock Materials
+    // All Materials for low stock check
     prisma.rawMaterial.findMany({
-      where: {
-        currentStock: { lte: prisma.rawMaterial.fields.minimumStock },
+      select: {
+        id: true,
+        name: true,
+        currentStock: true,
+        minimumStock: true,
       },
-      take: 5,
       orderBy: { currentStock: 'asc' },
     }),
     // Recent Orders
@@ -84,6 +88,15 @@ export default async function DashboardPage() {
       _count: true,
     }),
   ])
+
+  // Filter low stock items
+  const lowStockProducts = allProducts.filter(
+    (p) => p.currentStock <= p.lowStockAlert
+  ).slice(0, 5)
+
+  const lowStockMaterials = allMaterials.filter(
+    (m) => m.currentStock <= m.minimumStock
+  ).slice(0, 5)
 
   const salesAmount = totalSales._sum.totalAmount || 0
   const purchasesAmount = totalPurchases._sum.totalAmount || 0
