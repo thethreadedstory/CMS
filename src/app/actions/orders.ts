@@ -42,6 +42,7 @@ export async function createOrder(formData: FormData) {
       items: {
         create: items.map((item: any) => ({
           productId: item.productId,
+          variantId: item.variantId || null,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
           total: item.quantity * item.unitPrice,
@@ -71,14 +72,19 @@ export async function updateOrderStatus(orderId: string, status: string) {
 
     if (order) {
       for (const item of order.items) {
-        await prisma.product.update({
-          where: { id: item.productId },
-          data: {
-            currentStock: {
-              decrement: item.quantity,
-            },
-          },
-        })
+        if (item.variantId) {
+          // Deduct from variant stock
+          await prisma.productVariant.update({
+            where: { id: item.variantId },
+            data: { stock: { decrement: item.quantity } },
+          })
+        } else {
+          // Deduct from product stock
+          await prisma.product.update({
+            where: { id: item.productId },
+            data: { currentStock: { decrement: item.quantity } },
+          })
+        }
       }
     }
   }

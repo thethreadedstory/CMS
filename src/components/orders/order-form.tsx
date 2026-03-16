@@ -10,6 +10,15 @@ import { createOrder } from '@/app/actions/orders'
 import { Plus, Trash2, Calculator } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 
+interface ProductVariant {
+  id: string
+  variantType: string
+  variantValue: string
+  sku: string
+  price: number
+  stock: number
+}
+
 interface Product {
   id: string
   name: string
@@ -17,6 +26,7 @@ interface Product {
   sellingPrice: number
   currentStock: number
   category: { name: string } | null
+  variants: ProductVariant[]
 }
 
 interface Customer {
@@ -28,6 +38,7 @@ interface Customer {
 
 interface OrderItem {
   productId: string
+  variantId: string
   quantity: number
   unitPrice: number
 }
@@ -69,26 +80,55 @@ export function OrderForm({ customers, products }: OrderFormProps) {
   }, [paidAmount, total])
 
   const addItem = () => {
-    setItems([...items, { productId: '', quantity: 1, unitPrice: 0 }])
+    setItems([...items, { productId: '', variantId: '', quantity: 1, unitPrice: 0 }])
   }
 
   const removeItem = (index: number) => {
     setItems(items.filter((_, i) => i !== index))
   }
 
-  const updateItem = (index: number, field: keyof OrderItem, value: any) => {
+  const updateItem = (index: number, field: keyof OrderItem, value: string | number) => {
     const newItems = [...items]
     newItems[index] = { ...newItems[index], [field]: value }
-    
-    // Auto-populate price when product is selected
+
     if (field === 'productId') {
       const product = products.find(p => p.id === value)
+      // Reset variant selection
+      newItems[index].variantId = ''
       if (product) {
-        newItems[index].unitPrice = product.sellingPrice
+        // If product has variants, don't pre-fill price — wait for variant selection
+        // If no variants, use the product's selling price directly
+        newItems[index].unitPrice = product.variants.length > 0 ? 0 : product.sellingPrice
       }
     }
-    
+
+    if (field === 'variantId') {
+      const product = products.find(p => p.id === newItems[index].productId)
+      if (product) {
+        if (value) {
+          // Use the variant's own standalone price
+          const variant = product.variants.find(v => v.id === value)
+          if (variant) {
+            newItems[index].unitPrice = variant.price
+          }
+        } else {
+          // Variant deselected — fall back to product base price
+          newItems[index].unitPrice = product.sellingPrice
+        }
+      }
+    }
+
     setItems(newItems)
+  }
+
+  const getAvailableStock = (item: OrderItem): number => {
+    const product = products.find(p => p.id === item.productId)
+    if (!product) return 0
+    if (item.variantId) {
+      const variant = product.variants.find(v => v.id === item.variantId)
+      return variant?.stock ?? 0
+    }
+    return product.currentStock
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -106,6 +146,16 @@ export function OrderForm({ customers, products }: OrderFormProps) {
     
     if (items.some(item => !item.productId || item.quantity <= 0)) {
       setError('Please complete all item details')
+      return
+    }
+
+    // Validate: if product has variants, a variant must be selected
+    const missingVariant = items.some(item => {
+      const product = products.find(p => p.id === item.productId)
+      return product && product.variants.length > 0 && !item.variantId
+    })
+    if (missingVariant) {
+      setError('Please select a variant for all products that have variants')
       return
     }
 
@@ -129,7 +179,7 @@ export function OrderForm({ customers, products }: OrderFormProps) {
       await createOrder(formData)
       router.push('/orders')
       router.refresh()
-    } catch (err) {
+    } catch {
       setError('Failed to create order. Please try again.')
       setLoading(false)
     }
@@ -201,8 +251,10 @@ export function OrderForm({ customers, products }: OrderFormProps) {
             <div className="space-y-4">
               {items.map((item, index) => {
                 const product = products.find(p => p.id === item.productId)
+                const hasVariants = (product?.variants.length ?? 0) > 0
+                const availableStock = getAvailableStock(item)
                 const itemTotal = item.quantity * item.unitPrice
-                
+
                 return (
                   <div key={index} className="space-y-4 rounded-[1.4rem] border border-border/75 bg-[hsl(var(--surface-soft))]/55 p-4">
                     <div className="flex items-center justify-between">
@@ -217,9 +269,10 @@ export function OrderForm({ customers, products }: OrderFormProps) {
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                      <div className="md:col-span-2">
+
+                    <div className={`grid grid-cols-1 gap-4 ${hasVariants ? 'md:grid-cols-4' : 'md:grid-cols-4'}`}>
+                      {/* Product selector */}
+                      <div className={hasVariants ? 'md:col-span-2' : 'md:col-span-2'}>
                         <Label>Product</Label>
                         <select
                           value={item.productId}
@@ -230,15 +283,62 @@ export function OrderForm({ customers, products }: OrderFormProps) {
                           <option value="">Select product</option>
                           {products.map((p) => (
                             <option key={p.id} value={p.id}>
-                              {p.name} - {formatCurrency(p.sellingPrice)} (Stock: {p.currentStock})
+                              {p.name}
+                              {p.variants.length > 0
+                                ? ` — ${p.variants.length} variant${p.variants.length > 1 ? 's' : ''}`
+                                : ` — ${formatCurrency(p.sellingPrice)} (Stock: ${p.currentStock})`}
                             </option>
                           ))}
                         </select>
-                        {product && product.currentStock < item.quantity && (
-                          <p className="mt-1 text-xs text-destructive">Insufficient stock!</p>
-                        )}
                       </div>
-                      
+
+                      {/* Variant selector — only shown when product has variants */}
+                      {hasVariants && (
+                        <div className="md:col-span-2">
+                          <Label>
+                            Variant <span className="text-red-500">*</span>
+                          </Label>
+                          <select
+                            value={item.variantId}
+                            onChange={(e) => updateItem(index, 'variantId', e.target.value)}
+                            className="field-select"
+                            required
+                          >
+                            <option value="">Select variant</option>
+                            {product?.variants.map((v) => (
+                              <option key={v.id} value={v.id}>
+                                {v.variantType}: {v.variantValue} — {formatCurrency(v.price)} (Stock: {v.stock})
+                              </option>
+                            ))}
+                          </select>
+                          {item.variantId && availableStock < item.quantity && (
+                            <p className="mt-1 text-xs text-destructive">Insufficient variant stock!</p>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Stock warning for products without variants */}
+                      {!hasVariants && product && availableStock < item.quantity && (
+                        <div className="md:col-span-2 flex items-end">
+                          <p className="text-xs text-destructive pb-1">Insufficient stock!</p>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {/* Stock info badge */}
+                      {product && (
+                        <div className="col-span-2 flex items-center gap-2">
+                          <span className="text-xs text-muted-foreground">
+                            {hasVariants && item.variantId
+                              ? `Variant stock: ${availableStock}`
+                              : !hasVariants
+                              ? `Stock: ${availableStock}`
+                              : null}
+                          </span>
+                        </div>
+                      )}
+
                       <div>
                         <Label>Quantity</Label>
                         <Input
@@ -249,7 +349,7 @@ export function OrderForm({ customers, products }: OrderFormProps) {
                           required
                         />
                       </div>
-                      
+
                       <div>
                         <Label>Unit Price</Label>
                         <Input
@@ -262,7 +362,7 @@ export function OrderForm({ customers, products }: OrderFormProps) {
                         />
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center justify-between border-t border-border/70 pt-2">
                       <span className="text-sm text-muted-foreground">Item Total:</span>
                       <span className="font-semibold text-foreground">{formatCurrency(itemTotal)}</span>

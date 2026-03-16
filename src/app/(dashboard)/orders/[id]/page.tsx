@@ -20,6 +20,7 @@ export default async function OrderDetailPage({
       items: {
         include: {
           product: true,
+          variant: true,
         },
       },
       payments: {
@@ -95,6 +96,11 @@ export default async function OrderDetailPage({
                 >
                   <div className="flex-1">
                     <p className="font-medium text-foreground">{item.product.name}</p>
+                    {item.variant && (
+                      <p className="text-xs text-muted-foreground capitalize">
+                        {item.variant.variantType}: {item.variant.variantValue}
+                      </p>
+                    )}
                     <p className="text-sm text-muted-foreground">
                       {formatCurrency(item.unitPrice)} × {item.quantity}
                     </p>

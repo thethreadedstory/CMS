@@ -13,6 +13,9 @@ export default async function NewOrderPage() {
       where: { isActive: true },
       include: {
         category: true,
+        variants: {
+          orderBy: [{ variantType: 'asc' }, { variantValue: 'asc' }],
+        },
       },
       orderBy: { name: 'asc' },
     }),
