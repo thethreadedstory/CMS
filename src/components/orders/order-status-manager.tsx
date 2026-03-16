@@ -45,7 +45,7 @@ export function OrderStatusManager({ orderId, currentStatus }: OrderStatusManage
       <CardHeader>
         <CardTitle>Update Order Status</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-2">
+      <CardContent className="pt-0 space-y-2">
         {statuses.map((status) => {
           const isCurrent = status.value === currentStatus
           return (

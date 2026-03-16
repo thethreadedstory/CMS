@@ -24,7 +24,7 @@ export function OrdersByStatus({ data }: OrdersByStatusProps) {
         <span className="section-label w-fit">Distribution</span>
         <CardTitle>Orders by Status</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-0">
         <ResponsiveContainer width="100%" height={300}>
           <PieChart>
             <Pie

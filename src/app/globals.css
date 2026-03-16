@@ -10,16 +10,16 @@
     --card-foreground: 222 27% 16%;
     --popover: 0 0% 100%;
     --popover-foreground: 222 27% 16%;
-    --primary: 217 61% 43%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 217 65% 36%;
+    --primary-foreground: 0 0% 100%;
     --secondary: 210 20% 94%;
-    --secondary-foreground: 222 27% 18%;
+    --secondary-foreground: 222 35% 20%;
     --muted: 210 18% 94%;
-    --muted-foreground: 215 14% 42%;
+    --muted-foreground: 215 16% 36%;
     --accent: 214 32% 92%;
-    --accent-foreground: 222 27% 18%;
-    --destructive: 0 63% 47%;
-    --destructive-foreground: 210 40% 98%;
+    --accent-foreground: 222 35% 20%;
+    --destructive: 0 72% 40%;
+    --destructive-foreground: 0 0% 100%;
     --border: 214 18% 86%;
     --input: 214 18% 86%;
     --ring: 217 61% 43%;
@@ -105,7 +105,7 @@
   }
 
   .section-label {
-    @apply inline-flex items-center rounded-md border border-border bg-white px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground;
+    @apply inline-flex items-center rounded-md border border-border bg-white px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-foreground/60;
   }
 
   .field-select {
@@ -157,7 +157,7 @@
   }
 
   .metric-card {
-    @apply relative overflow-hidden rounded-lg border border-border bg-white;
+    @apply relative overflow-hidden rounded-xl border border-border/80 bg-white shadow-[0_1px_4px_0_rgba(30,39,64,0.07),0_0_0_1px_rgba(30,39,64,0.04)] transition-shadow duration-200 hover:shadow-[0_4px_12px_0_rgba(30,39,64,0.1)];
   }
 }
 

@@ -20,7 +20,7 @@ export function SalesChart() {
         <span className="section-label w-fit">Revenue</span>
         <CardTitle>Sales & Purchase Trend</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-0">
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={data}>
             <CartesianGrid stroke="#d9d1c5" strokeDasharray="3 3" vertical={false} />

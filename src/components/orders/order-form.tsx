@@ -147,7 +147,7 @@ export function OrderForm({ customers, products }: OrderFormProps) {
         <CardHeader>
           <CardTitle>Customer & Date</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="pt-0 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="customerId">
@@ -194,7 +194,7 @@ export function OrderForm({ customers, products }: OrderFormProps) {
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-0">
           {items.length === 0 ? (
             <p className="text-sm text-muted-foreground">No items added. Click "Add Item" to add products to this order.</p>
           ) : (
@@ -211,9 +211,10 @@ export function OrderForm({ customers, products }: OrderFormProps) {
                         type="button"
                         variant="ghost"
                         size="sm"
+                        className="text-muted-foreground hover:text-destructive"
                         onClick={() => removeItem(index)}
                       >
-                        <Trash2 className="h-4 w-4 text-red-600" />
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                     
@@ -281,7 +282,7 @@ export function OrderForm({ customers, products }: OrderFormProps) {
             <CardTitle>Pricing & Payment</CardTitle>
           </div>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="pt-0 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="discount">Discount</Label>

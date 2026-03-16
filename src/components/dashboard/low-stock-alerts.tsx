@@ -31,7 +31,7 @@ export function LowStockAlerts({ products, materials }: LowStockAlertsProps) {
           Low Stock Alerts
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-0">
         {!hasAlerts ? (
           <p className="text-sm text-muted-foreground">All items are well stocked.</p>
         ) : (

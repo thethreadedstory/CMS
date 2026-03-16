@@ -34,7 +34,7 @@ export function RecentOrders({ orders }: RecentOrdersProps) {
         <span className="section-label w-fit">Activity</span>
         <CardTitle>Recent Orders</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-0">
         <div className="space-y-4">
           {orders.length === 0 ? (
             <p className="text-sm text-muted-foreground">No recent orders</p>

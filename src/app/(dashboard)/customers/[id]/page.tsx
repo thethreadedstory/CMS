@@ -72,19 +72,19 @@ export default async function CustomerDetailPage({
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
-          <CardContent className="p-6">
+          <CardContent>
             <p className="text-sm text-muted-foreground">Total Orders</p>
             <p className="text-2xl font-bold text-foreground mt-2">{customer.orders.length}</p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6">
+          <CardContent>
             <p className="text-sm text-muted-foreground">Total Spent</p>
             <p className="text-2xl font-bold text-foreground mt-2">{formatCurrency(totalSpent)}</p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6">
+          <CardContent>
             <p className="text-sm text-muted-foreground">Pending Amount</p>
             <p className={`text-2xl font-bold mt-2 ${pendingAmount > 0 ? 'text-destructive' : 'text-foreground'}`}>
               {formatCurrency(pendingAmount)}
@@ -98,7 +98,7 @@ export default async function CustomerDetailPage({
           <CardHeader>
             <CardTitle>Contact Information</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="pt-0 space-y-4">
             {customer.phone && (
               <div className="flex items-center gap-3">
                 <Phone className="h-5 w-5 text-muted-foreground" />
@@ -140,7 +140,7 @@ export default async function CustomerDetailPage({
           <CardHeader>
             <CardTitle>Recent Payments</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-0">
             {customer.payments.length === 0 ? (
               <p className="text-sm text-muted-foreground">No payments recorded</p>
             ) : (
@@ -164,7 +164,7 @@ export default async function CustomerDetailPage({
         <CardHeader>
           <CardTitle>Order History</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-0">
           {customer.orders.length === 0 ? (
             <p className="text-sm text-muted-foreground">No orders yet</p>
           ) : (

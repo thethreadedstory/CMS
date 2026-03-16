@@ -101,7 +101,7 @@ export function ProductForm({ product, categories }: ProductFormProps) {
         <CardHeader>
           <CardTitle>Basic Information</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="pt-0 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="name">
@@ -183,7 +183,7 @@ export function ProductForm({ product, categories }: ProductFormProps) {
         <CardHeader>
           <CardTitle>Pricing & Stock</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="pt-0 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="sellingPrice">
@@ -273,7 +273,7 @@ export function ProductForm({ product, categories }: ProductFormProps) {
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-0">
           {variants.length === 0 ? (
             <p className="text-sm text-muted-foreground">No variants added. Click "Add Variant" to create size, color, or style options.</p>
           ) : (
@@ -286,9 +286,10 @@ export function ProductForm({ product, categories }: ProductFormProps) {
                       type="button"
                       variant="ghost"
                       size="sm"
+                      className="text-muted-foreground hover:text-destructive"
                       onClick={() => removeVariant(index)}
                     >
-                      <Trash2 className="h-4 w-4 text-red-600" />
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -5,10 +5,10 @@ import { ArrowLeft } from 'lucide-react'
 
 export default function NewCustomerPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div>
         <Link href="/customers">
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" className="-ml-2">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Customers
           </Button>

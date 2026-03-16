@@ -83,7 +83,7 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
           <CardHeader>
             <CardTitle>{editingId ? 'Edit Category' : 'Add New Category'}</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-0">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Category Name *</Label>

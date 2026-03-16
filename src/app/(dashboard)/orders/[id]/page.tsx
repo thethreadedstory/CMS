@@ -86,7 +86,7 @@ export default async function OrderDetailPage({
           <CardHeader>
             <CardTitle>Order Items</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-0">
             <div className="space-y-4">
               {order.items.map((item) => (
                 <div
@@ -151,7 +151,7 @@ export default async function OrderDetailPage({
             <CardHeader>
               <CardTitle>Customer Information</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="pt-0 space-y-3">
               <div>
                 <p className="text-sm text-muted-foreground">Name</p>
                 <Link 
@@ -189,7 +189,7 @@ export default async function OrderDetailPage({
             <CardHeader>
               <CardTitle>Payment History</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-0">
               {order.payments.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No payments recorded</p>
               ) : (

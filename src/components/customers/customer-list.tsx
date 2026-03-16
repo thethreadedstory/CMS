@@ -143,25 +143,26 @@ export function CustomerList({ customers, initialSearch }: CustomerListProps) {
                         </span>
                       </td>
                       <td>
-                        <div className="flex items-center justify-center gap-2">
+                        <div className="flex items-center justify-center gap-1">
                           <Link href={`/customers/${customer.id}`}>
-                            <Button variant="ghost" size="sm" data-testid={`view-customer-${customer.id}`}>
+                            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground" data-testid={`view-customer-${customer.id}`}>
                               <Eye className="h-4 w-4" />
                             </Button>
                           </Link>
                           <Link href={`/customers/${customer.id}/edit`}>
-                            <Button variant="ghost" size="sm" data-testid={`edit-customer-${customer.id}`}>
+                            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary" data-testid={`edit-customer-${customer.id}`}>
                               <Edit className="h-4 w-4" />
                             </Button>
                           </Link>
                           <Button
                             variant="ghost"
                             size="sm"
+                            className="text-muted-foreground hover:text-destructive"
                             onClick={() => handleDeleteClick(customer.id, customer.name)}
                             disabled={deletingId === customer.id}
                             data-testid={`delete-customer-${customer.id}`}
                           >
-                            <Trash2 className="h-4 w-4 text-destructive" />
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </td>

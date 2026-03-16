@@ -10,10 +10,10 @@ export default async function NewProductPage() {
   })
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div>
         <Link href="/products">
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" className="-ml-2">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Products
           </Button>

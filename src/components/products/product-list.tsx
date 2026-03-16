@@ -188,25 +188,26 @@ export function ProductList({
                           </Badge>
                         </td>
                         <td>
-                          <div className="flex items-center justify-center gap-2">
+                          <div className="flex items-center justify-center gap-1">
                             <Link href={`/products/${product.id}`}>
-                              <Button variant="ghost" size="sm" data-testid={`view-product-${product.id}`}>
+                              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground" data-testid={`view-product-${product.id}`}>
                                 <Eye className="h-4 w-4" />
                               </Button>
                             </Link>
                             <Link href={`/products/${product.id}/edit`}>
-                              <Button variant="ghost" size="sm" data-testid={`edit-product-${product.id}`}>
+                              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary" data-testid={`edit-product-${product.id}`}>
                                 <Edit className="h-4 w-4" />
                               </Button>
                             </Link>
                             <Button
                               variant="ghost"
                               size="sm"
+                              className="text-muted-foreground hover:text-destructive"
                               onClick={() => handleDeleteClick(product.id, product.name)}
                               disabled={deletingId === product.id}
                               data-testid={`delete-product-${product.id}`}
                             >
-                              <Trash2 className="h-4 w-4 text-destructive" />
+                              <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
                         </td>

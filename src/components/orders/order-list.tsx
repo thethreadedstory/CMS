@@ -227,25 +227,26 @@ export function OrderList({
                       </div>
                     </td>
                     <td>
-                      <div className="flex items-center justify-center gap-2">
+                      <div className="flex items-center justify-center gap-1">
                         <Link href={`/orders/${order.id}`}>
-                          <Button variant="ghost" size="sm" data-testid={`view-order-${order.id}`}>
+                          <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground" data-testid={`view-order-${order.id}`}>
                             <Eye className="h-4 w-4" />
                           </Button>
                         </Link>
                         <Link href={`/orders/${order.id}/edit`}>
-                          <Button variant="ghost" size="sm" data-testid={`edit-order-${order.id}`}>
+                          <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary" data-testid={`edit-order-${order.id}`}>
                             <Edit className="h-4 w-4" />
                           </Button>
                         </Link>
                         <Button
                           variant="ghost"
                           size="sm"
+                          className="text-muted-foreground hover:text-destructive"
                           onClick={() => handleDeleteClick(order.id, order.orderNumber)}
                           disabled={deletingId === order.id}
                           data-testid={`delete-order-${order.id}`}
                         >
-                          <Trash2 className="h-4 w-4 text-destructive" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </td>
