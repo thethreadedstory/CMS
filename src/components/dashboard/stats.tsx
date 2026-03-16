@@ -57,7 +57,7 @@ export function DashboardStats({ stats }: StatsProps) {
       href: '/purchases',
     },
     {
-      title: 'Estimated Profit',
+      title: 'Total Profit',
       value: formatCurrency(stats.totalProfit),
       icon: DollarSign,
       iconColor: '#0d9488',

@@ -13,7 +13,6 @@ export const getDashboardData = unstable_cache(
       totalOrders,
       totalCustomers,
       totalProducts,
-      deliveredOrders,
       recentOrders,
       ordersByStatus,
       salesTrendOrders,
@@ -21,7 +20,7 @@ export const getDashboardData = unstable_cache(
     ] = await Promise.all([
       prisma.order.aggregate({
         where: {
-          orderStatus: { in: ['DELIVERED'] },
+          orderStatus: { not: 'CANCELLED' },
         },
         _sum: { totalAmount: true },
       }),
@@ -37,19 +36,6 @@ export const getDashboardData = unstable_cache(
       prisma.order.count(),
       prisma.customer.count(),
       prisma.product.count({ where: { isActive: true } }),
-      prisma.order.findMany({
-        where: {
-          orderStatus: 'DELIVERED',
-        },
-        select: {
-          totalAmount: true,
-          purchases: {
-            select: {
-              totalAmount: true,
-            },
-          },
-        },
-      }),
       prisma.order.findMany({
         take: 5,
         orderBy: { orderDate: 'desc' },
@@ -75,7 +61,9 @@ export const getDashboardData = unstable_cache(
       }),
       prisma.order.findMany({
         where: {
-          orderStatus: 'DELIVERED',
+          orderStatus: {
+            not: 'CANCELLED',
+          },
           orderDate: {
             gte: trendStartDate,
           },
@@ -103,14 +91,7 @@ export const getDashboardData = unstable_cache(
     const salesAmount = totalSales._sum.totalAmount || 0
     const purchasesAmount = totalPurchases._sum.totalAmount || 0
     const pendingAmount = pendingPayments._sum.pendingAmount || 0
-    const estimatedProfit = deliveredOrders.reduce((sum, order) => {
-      const linkedPurchaseTotal = order.purchases.reduce(
-        (purchaseSum, purchase) => purchaseSum + purchase.totalAmount,
-        0
-      )
-
-      return sum + (order.totalAmount - linkedPurchaseTotal)
-    }, 0)
+    const totalProfit = salesAmount - purchasesAmount
     const salesByMonth = new Map<string, number>()
     const purchasesByMonth = new Map<string, number>()
     const trendData = Array.from({ length: 6 }, (_, index) => {
@@ -137,7 +118,7 @@ export const getDashboardData = unstable_cache(
       stats: {
         totalSales: salesAmount,
         totalPurchases: purchasesAmount,
-        totalProfit: estimatedProfit,
+        totalProfit,
         pendingPayments: pendingAmount,
         totalOrders,
         totalCustomers,

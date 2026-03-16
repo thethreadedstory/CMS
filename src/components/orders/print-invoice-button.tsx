@@ -4,7 +4,13 @@ import { useEffect } from 'react'
 import { Printer } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
-export function PrintInvoiceButton() {
+type PrintInvoiceButtonProps = {
+  documentTitle?: string
+}
+
+export function PrintInvoiceButton({
+  documentTitle = 'invoice',
+}: PrintInvoiceButtonProps) {
   useEffect(() => {
     return () => {
       document.body.classList.remove('invoice-print-mode')
@@ -12,10 +18,13 @@ export function PrintInvoiceButton() {
   }, [])
 
   const handlePrint = () => {
+    const originalTitle = document.title
     document.body.classList.add('invoice-print-mode')
+    document.title = documentTitle
 
     const cleanup = () => {
       document.body.classList.remove('invoice-print-mode')
+      document.title = originalTitle
     }
 
     window.addEventListener('afterprint', cleanup, { once: true })

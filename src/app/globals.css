@@ -211,10 +211,33 @@
     line-height: 1.5;
   }
 
+  body.invoice-print-mode .invoice-banner {
+    padding-bottom: 16px;
+    text-align: center;
+    border-bottom: 1px solid #1f2937;
+  }
+
+  body.invoice-print-mode .invoice-brand-name {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  body.invoice-print-mode .invoice-story-title {
+    margin: 8px 0 0;
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
   body.invoice-print-mode .invoice-header {
     display: flex;
     justify-content: space-between;
     gap: 24px;
+    margin-top: 18px;
     padding-bottom: 16px;
     border-bottom: 1px solid #1f2937;
   }

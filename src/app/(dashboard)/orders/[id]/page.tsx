@@ -83,6 +83,8 @@ export default async function OrderDetailPage({
     { label: 'Paid', value: formatCurrency(order.paidAmount) },
     { label: 'Pending', value: formatCurrency(order.pendingAmount) },
   ]
+  const invoiceStoryTitle = 'The Thread Story'
+  const invoiceDocumentTitle = `Invoice-${order.orderNumber || order.id}`
 
   return (
     <div className="space-y-6">
@@ -93,7 +95,7 @@ export default async function OrderDetailPage({
             Back to Orders
           </Button>
         </Link>
-        <PrintInvoiceButton />
+        <PrintInvoiceButton documentTitle={invoiceDocumentTitle} />
       </div>
 
       <div className="flex items-start justify-between">
@@ -345,6 +347,10 @@ export default async function OrderDetailPage({
 
       <section className="invoice-print-area" aria-hidden="true">
         <div className="invoice-shell">
+          <div className="invoice-banner">
+            <p className="invoice-story-title">{invoiceStoryTitle}</p>
+          </div>
+
           <div className="invoice-header">
             <div>
               <p className="invoice-eyebrow">Invoice</p>
