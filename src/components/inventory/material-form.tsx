@@ -12,22 +12,14 @@ import { Label } from '@/components/ui/label'
 interface Material {
   id: string
   name: string
-  categoryId: string | null
-  supplierId: string | null
   unit: string
-  currentStock: number
-  minimumStock: number
-  costPerUnit: number
-  notes: string | null
 }
 
 interface MaterialFormProps {
-  categories: Array<{ id: string; name: string }>
-  suppliers: Array<{ id: string; name: string }>
   material?: Material
 }
 
-export function MaterialForm({ categories, suppliers, material }: MaterialFormProps) {
+export function MaterialForm({ material }: MaterialFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -91,103 +83,6 @@ export function MaterialForm({ categories, suppliers, material }: MaterialFormPr
                 data-testid="material-unit-input"
               />
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="categoryId">Category</Label>
-              <select
-                id="categoryId"
-                name="categoryId"
-                defaultValue={material?.categoryId || ''}
-                className="field-select"
-                data-testid="material-category-select"
-              >
-                <option value="">Select a category</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="supplierId">Preferred Supplier</Label>
-              <select
-                id="supplierId"
-                name="supplierId"
-                defaultValue={material?.supplierId || ''}
-                className="field-select"
-                data-testid="material-supplier-select"
-              >
-                <option value="">Select a supplier</option>
-                {suppliers.map((supplier) => (
-                  <option key={supplier.id} value={supplier.id}>
-                    {supplier.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="currentStock">
-                Opening Stock <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="currentStock"
-                name="currentStock"
-                type="number"
-                min="0"
-                step="0.01"
-                defaultValue={material?.currentStock ?? 0}
-                required
-                data-testid="material-current-stock-input"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="minimumStock">
-                Minimum Stock <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="minimumStock"
-                name="minimumStock"
-                type="number"
-                min="0"
-                step="0.01"
-                defaultValue={material?.minimumStock ?? 0}
-                required
-                data-testid="material-minimum-stock-input"
-              />
-            </div>
-
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="costPerUnit">
-                Cost Per Unit <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="costPerUnit"
-                name="costPerUnit"
-                type="number"
-                min="0"
-                step="0.01"
-                defaultValue={material?.costPerUnit ?? 0}
-                required
-                data-testid="material-cost-per-unit-input"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notes</Label>
-            <textarea
-              id="notes"
-              name="notes"
-              rows={4}
-              defaultValue={material?.notes || ''}
-              placeholder="Add storage, sourcing, or usage notes..."
-              className="field-textarea"
-              data-testid="material-notes-input"
-            />
           </div>
 
           <div className="flex items-center gap-4">

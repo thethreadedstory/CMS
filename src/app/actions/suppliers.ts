@@ -29,6 +29,8 @@ export async function createSupplier(formData: FormData) {
   revalidatePath('/suppliers')
   revalidatePath('/inventory')
   revalidatePath('/purchases')
+  revalidatePath('/purchases/new')
+  revalidateTag('purchase-form-data')
   revalidateTag('dashboard')
 }
 
@@ -60,6 +62,8 @@ export async function updateSupplier(id: string, formData: FormData) {
   revalidatePath(`/suppliers/${id}`)
   revalidatePath('/inventory')
   revalidatePath('/purchases')
+  revalidatePath('/purchases/new')
+  revalidateTag('purchase-form-data')
   revalidateTag('dashboard')
 }
 
@@ -71,5 +75,7 @@ export async function deleteSupplier(id: string) {
   revalidatePath('/suppliers')
   revalidatePath('/inventory')
   revalidatePath('/purchases')
+  revalidatePath('/purchases/new')
+  revalidateTag('purchase-form-data')
   revalidateTag('dashboard')
 }

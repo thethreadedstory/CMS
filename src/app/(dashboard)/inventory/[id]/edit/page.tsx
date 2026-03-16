@@ -10,36 +10,14 @@ export default async function EditMaterialPage({
 }: {
   params: { id: string }
 }) {
-  const [material, categories, suppliers] = await Promise.all([
-    prisma.rawMaterial.findUnique({
-      where: { id: params.id },
-      select: {
-        id: true,
-        name: true,
-        categoryId: true,
-        supplierId: true,
-        unit: true,
-        currentStock: true,
-        minimumStock: true,
-        costPerUnit: true,
-        notes: true,
-      },
-    }),
-    prisma.rawMaterialCategory.findMany({
-      orderBy: { name: 'asc' },
-      select: {
-        id: true,
-        name: true,
-      },
-    }),
-    prisma.supplier.findMany({
-      orderBy: { name: 'asc' },
-      select: {
-        id: true,
-        name: true,
-      },
-    }),
-  ])
+  const material = await prisma.rawMaterial.findUnique({
+    where: { id: params.id },
+    select: {
+      id: true,
+      name: true,
+      unit: true,
+    },
+  })
 
   if (!material) {
     notFound()
@@ -58,10 +36,10 @@ export default async function EditMaterialPage({
 
       <div>
         <h1 className="page-title">Edit Material</h1>
-        <p className="page-copy">Update raw material details</p>
+        <p className="page-copy">Update the material name and unit</p>
       </div>
 
-      <MaterialForm material={material} categories={categories} suppliers={suppliers} />
+      <MaterialForm material={material} />
     </div>
   )
 }

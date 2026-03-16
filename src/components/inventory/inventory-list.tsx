@@ -3,30 +3,18 @@
 import { startTransition, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Search, Eye, Edit, Trash2, AlertCircle } from 'lucide-react'
+import { Search, Eye, Edit, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { deleteRawMaterial } from '@/app/actions/raw-materials'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { formatCurrency } from '@/lib/utils'
 
 interface Material {
   id: string
   name: string
   unit: string
-  currentStock: number
-  minimumStock: number
-  costPerUnit: number
-  category: {
-    id: string
-    name: string
-  } | null
-  supplier: {
-    id: string
-    name: string
-  } | null
 }
 
 interface InventoryListProps {
@@ -91,7 +79,7 @@ export function InventoryList({ materials, initialSearch }: InventoryListProps) 
             <div className="relative flex-1">
               <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search by material, unit, category, or supplier..."
+                placeholder="Search by material name or unit..."
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 className="pl-10"
@@ -115,51 +103,16 @@ export function InventoryList({ materials, initialSearch }: InventoryListProps) 
                 <thead>
                   <tr>
                     <th>Material</th>
-                    <th>Category</th>
-                    <th>Supplier</th>
-                    <th>Stock</th>
-                    <th>Value</th>
+                    <th>Unit</th>
                     <th className="text-center">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {materials.map((material) => {
-                    const isLowStock = material.currentStock <= material.minimumStock
-                    const stockValue = material.currentStock * material.costPerUnit
-
                     return (
                       <tr key={material.id} data-testid={`material-row-${material.id}`}>
-                        <td>
-                          <div>
-                            <p className="font-medium text-foreground">{material.name}</p>
-                            <p className="text-sm text-muted-foreground">Unit: {material.unit}</p>
-                          </div>
-                        </td>
-                        <td className="text-sm text-muted-foreground">
-                          {material.category?.name || '-'}
-                        </td>
-                        <td className="text-sm text-muted-foreground">
-                          {material.supplier?.name || '-'}
-                        </td>
-                        <td>
-                          <div className="flex items-center gap-2 text-sm">
-                            <span className={isLowStock ? 'font-medium text-destructive' : 'font-medium text-foreground'}>
-                              {material.currentStock} {material.unit}
-                            </span>
-                            {isLowStock && <AlertCircle className="h-4 w-4 text-destructive" />}
-                          </div>
-                          <p className="text-xs text-muted-foreground">
-                            Min: {material.minimumStock} {material.unit}
-                          </p>
-                        </td>
-                        <td>
-                          <div className="text-sm">
-                            <p className="font-semibold text-foreground">{formatCurrency(stockValue)}</p>
-                            <p className="text-muted-foreground">
-                              Cost: {formatCurrency(material.costPerUnit)}
-                            </p>
-                          </div>
-                        </td>
+                        <td className="font-medium text-foreground">{material.name}</td>
+                        <td className="text-sm text-muted-foreground">{material.unit}</td>
                         <td>
                           <div className="flex items-center justify-center gap-1">
                             <Link href={`/inventory/${material.id}`}>

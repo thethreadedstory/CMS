@@ -17,8 +17,6 @@ export default async function InventoryPage({
           OR: [
             { name: { contains: search, mode: 'insensitive' } },
             { unit: { contains: search, mode: 'insensitive' } },
-            { category: { is: { name: { contains: search, mode: 'insensitive' } } } },
-            { supplier: { is: { name: { contains: search, mode: 'insensitive' } } } },
           ],
         }
       : undefined,
@@ -26,21 +24,6 @@ export default async function InventoryPage({
       id: true,
       name: true,
       unit: true,
-      currentStock: true,
-      minimumStock: true,
-      costPerUnit: true,
-      category: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
-      supplier: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
     },
     orderBy: { name: 'asc' },
   })
@@ -50,7 +33,7 @@ export default async function InventoryPage({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="page-title">Raw Materials</h1>
-          <p className="page-copy">Manage your inventory and stock levels</p>
+          <p className="page-copy">Manage material names and units</p>
         </div>
         <Link href="/inventory/new">
           <Button data-testid="add-material-button">
