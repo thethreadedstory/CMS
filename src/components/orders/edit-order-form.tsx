@@ -201,7 +201,7 @@ export function EditOrderForm({ orderId, customers, products, initialData }: Edi
       formData.append('items', JSON.stringify(items))
 
       await updateOrder(orderId, formData)
-      router.push(`/orders/${orderId}`)
+      router.replace('/orders')
     } catch {
       setError('Failed to update order. Please try again.')
       setLoading(false)
@@ -522,7 +522,7 @@ export function EditOrderForm({ orderId, customers, products, initialData }: Edi
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push(`/orders/${orderId}`)}
+          onClick={() => router.replace('/orders')}
           disabled={loading}
         >
           Cancel

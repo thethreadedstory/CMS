@@ -58,7 +58,7 @@ export function ProductForm({ product, categories }: ProductFormProps) {
       } else {
         await createProduct(formData)
       }
-      router.push('/products')
+      router.replace('/products')
     } catch (err) {
       setError('Failed to save product. Please try again.')
       setLoading(false)
@@ -358,7 +358,7 @@ export function ProductForm({ product, categories }: ProductFormProps) {
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push('/products')}
+          onClick={() => router.replace('/products')}
           disabled={loading}
         >
           Cancel

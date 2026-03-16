@@ -7,7 +7,7 @@ export default function NewCustomerPage() {
   return (
     <div className="space-y-5">
       <div>
-        <Link href="/customers">
+        <Link href="/customers" replace>
           <Button variant="ghost" size="sm" className="-ml-2">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Customers

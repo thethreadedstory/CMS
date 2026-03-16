@@ -44,10 +44,10 @@ export default async function NewPaymentPage({
   return (
     <div className="space-y-5">
       <div>
-        <Link href={linkedOrder ? `/orders/${linkedOrder.id}` : '/payments'}>
+        <Link href="/payments" replace>
           <Button variant="ghost" size="sm" className="-ml-2">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
+            Back to Payments
           </Button>
         </Link>
       </div>

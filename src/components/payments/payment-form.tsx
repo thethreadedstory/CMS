@@ -82,7 +82,7 @@ export function PaymentForm({
     try {
       const formData = new FormData(event.currentTarget)
       await createPayment(formData)
-      router.push(orderId ? `/orders/${orderId}` : '/payments')
+      router.replace('/payments')
     } catch {
       setError('Failed to record payment. Please try again.')
       setLoading(false)
@@ -220,7 +220,7 @@ export function PaymentForm({
             <Button
               type="button"
               variant="outline"
-              onClick={() => router.push(orderId ? `/orders/${orderId}` : '/payments')}
+              onClick={() => router.replace('/payments')}
               disabled={loading}
             >
               Cancel

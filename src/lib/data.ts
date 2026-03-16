@@ -185,6 +185,37 @@ export const getOrderFormData = unstable_cache(
   }
 )
 
+export const getPurchaseFormData = unstable_cache(
+  async () => {
+    const [suppliers, materials] = await Promise.all([
+      prisma.supplier.findMany({
+        select: {
+          id: true,
+          name: true,
+        },
+        orderBy: { name: 'asc' },
+      }),
+      prisma.rawMaterial.findMany({
+        select: {
+          id: true,
+          name: true,
+          unit: true,
+          currentStock: true,
+          costPerUnit: true,
+        },
+        orderBy: { name: 'asc' },
+      }),
+    ])
+
+    return { suppliers, materials }
+  },
+  ['purchase-form-data'],
+  {
+    revalidate: 300,
+    tags: ['purchase-form-data'],
+  }
+)
+
 export const getProductCategoryOptions = unstable_cache(
   async () =>
     prisma.productCategory.findMany({

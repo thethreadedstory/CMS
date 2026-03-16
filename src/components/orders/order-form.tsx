@@ -177,7 +177,7 @@ export function OrderForm({ customers, products }: OrderFormProps) {
       formData.append('items', JSON.stringify(items))
 
       await createOrder(formData)
-      router.push('/orders')
+      router.replace('/orders')
     } catch {
       setError('Failed to create order. Please try again.')
       setLoading(false)
@@ -492,7 +492,7 @@ export function OrderForm({ customers, products }: OrderFormProps) {
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push('/orders')}
+          onClick={() => router.replace('/orders')}
           disabled={loading}
         >
           Cancel

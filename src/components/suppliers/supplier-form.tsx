@@ -2,48 +2,49 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Loader2 } from 'lucide-react'
+import { createSupplier, updateSupplier } from '@/app/actions/suppliers'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent } from '@/components/ui/card'
-import { createCustomer, updateCustomer } from '@/app/actions/customers'
-import { Loader2 } from 'lucide-react'
 
-interface Customer {
+interface Supplier {
   id: string
   name: string
+  contactPerson: string | null
   phone: string | null
   email: string | null
   address: string | null
-  city: string | null
   notes: string | null
 }
 
-interface CustomerFormProps {
-  customer?: Customer
+interface SupplierFormProps {
+  supplier?: Supplier
 }
 
-export function CustomerForm({ customer }: CustomerFormProps) {
+export function SupplierForm({ supplier }: SupplierFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
     setLoading(true)
     setError('')
 
-    const formData = new FormData(e.currentTarget)
-
     try {
-      if (customer) {
-        await updateCustomer(customer.id, formData)
+      const formData = new FormData(event.currentTarget)
+
+      if (supplier) {
+        await updateSupplier(supplier.id, formData)
       } else {
-        await createCustomer(formData)
+        await createSupplier(formData)
       }
-      router.replace('/customers')
-    } catch (err) {
-      setError('Failed to save customer. Please try again.')
+
+      router.replace('/suppliers')
+    } catch {
+      setError('Failed to save supplier. Please try again.')
       setLoading(false)
     }
   }
@@ -58,18 +59,29 @@ export function CustomerForm({ customer }: CustomerFormProps) {
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="name">
-                Customer Name <span className="text-red-500">*</span>
+                Supplier Name <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="name"
                 name="name"
                 required
-                defaultValue={customer?.name || ''}
-                placeholder="Enter customer name"
-                data-testid="customer-name-input"
+                defaultValue={supplier?.name || ''}
+                placeholder="Enter supplier name"
+                data-testid="supplier-name-input"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="contactPerson">Contact Person</Label>
+              <Input
+                id="contactPerson"
+                name="contactPerson"
+                defaultValue={supplier?.contactPerson || ''}
+                placeholder="Primary contact name"
+                data-testid="supplier-contact-person-input"
               />
             </div>
 
@@ -79,9 +91,9 @@ export function CustomerForm({ customer }: CustomerFormProps) {
                 id="phone"
                 name="phone"
                 type="tel"
-                defaultValue={customer?.phone || ''}
+                defaultValue={supplier?.phone || ''}
                 placeholder="Enter phone number"
-                data-testid="customer-phone-input"
+                data-testid="supplier-phone-input"
               />
             </div>
 
@@ -91,20 +103,9 @@ export function CustomerForm({ customer }: CustomerFormProps) {
                 id="email"
                 name="email"
                 type="email"
-                defaultValue={customer?.email || ''}
+                defaultValue={supplier?.email || ''}
                 placeholder="Enter email address"
-                data-testid="customer-email-input"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="city">City</Label>
-              <Input
-                id="city"
-                name="city"
-                defaultValue={customer?.city || ''}
-                placeholder="Enter city"
-                data-testid="customer-city-input"
+                data-testid="supplier-email-input"
               />
             </div>
           </div>
@@ -114,9 +115,9 @@ export function CustomerForm({ customer }: CustomerFormProps) {
             <Input
               id="address"
               name="address"
-              defaultValue={customer?.address || ''}
-              placeholder="Enter full address"
-              data-testid="customer-address-input"
+              defaultValue={supplier?.address || ''}
+              placeholder="Enter supplier address"
+              data-testid="supplier-address-input"
             />
           </div>
 
@@ -126,28 +127,28 @@ export function CustomerForm({ customer }: CustomerFormProps) {
               id="notes"
               name="notes"
               rows={4}
-              defaultValue={customer?.notes || ''}
-              placeholder="Add any additional notes..."
+              defaultValue={supplier?.notes || ''}
+              placeholder="Add any supplier notes..."
               className="field-textarea"
-              data-testid="customer-notes-input"
+              data-testid="supplier-notes-input"
             />
           </div>
 
           <div className="flex items-center gap-4">
-            <Button type="submit" disabled={loading} data-testid="save-customer-button">
+            <Button type="submit" disabled={loading} data-testid="save-supplier-button">
               {loading ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Saving...
                 </>
               ) : (
-                customer ? 'Update Customer' : 'Add Customer'
+                supplier ? 'Update Supplier' : 'Add Supplier'
               )}
             </Button>
             <Button
               type="button"
               variant="outline"
-              onClick={() => router.replace('/customers')}
+              onClick={() => router.replace('/suppliers')}
               disabled={loading}
             >
               Cancel

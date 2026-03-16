@@ -70,10 +70,10 @@ export default async function EditOrderPage({
   return (
     <div className="space-y-5">
       <div>
-        <Link href={`/orders/${params.id}`}>
+        <Link href="/orders" replace>
           <Button variant="ghost" size="sm" className="-ml-2">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Order
+            Back to Orders
           </Button>
         </Link>
       </div>

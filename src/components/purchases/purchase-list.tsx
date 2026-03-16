@@ -1,8 +1,16 @@
 'use client'
 
+import { useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency, formatDate } from '@/lib/utils'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { Eye, Edit, Trash2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { deletePurchase } from '@/app/actions/purchases'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { toast } from 'sonner'
 
 interface Purchase {
   id: string
@@ -30,45 +38,145 @@ const statusColors: Record<string, string> = {
 }
 
 export function PurchaseList({ purchases }: PurchaseListProps) {
-  return (
-    <div className="space-y-4">
-      {purchases.length === 0 ? (
-        <Card className="empty-state">
-          <div>
-            <p className="text-base font-medium text-muted-foreground">No purchases recorded yet.</p>
-          </div>
-        </Card>
-      ) : (
-        <div className="space-y-4">
-          {purchases.map((purchase) => (
-            <Card key={purchase.id} className="overflow-hidden">
-              <div className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-lg font-semibold text-foreground">{purchase.purchaseNumber}</h3>
-                      <Badge className={statusColors[purchase.paymentStatus]}>
-                        {purchase.paymentStatus.replace('_', ' ')}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Supplier: <span className="font-medium text-foreground">{purchase.supplier?.name || 'N/A'}</span>
-                    </p>
-                    <p className="mt-1 text-sm text-muted-foreground">{formatDate(purchase.purchaseDate)}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-semibold text-foreground">{formatCurrency(purchase.totalAmount)}</p>
-                  </div>
-                </div>
+  const router = useRouter()
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [selectedPurchase, setSelectedPurchase] = useState<{
+    id: string
+    purchaseNumber: string
+  } | null>(null)
 
-                <div className="border-t border-border/70 pt-4 text-sm text-muted-foreground">
-                  {purchase._count.items} item(s)
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
-    </div>
+  const handleDeleteClick = (id: string, purchaseNumber: string) => {
+    setSelectedPurchase({ id, purchaseNumber })
+    setConfirmOpen(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedPurchase) return
+
+    setDeletingId(selectedPurchase.id)
+
+    try {
+      await deletePurchase(selectedPurchase.id)
+      toast.success(`Purchase "${selectedPurchase.purchaseNumber}" deleted successfully`)
+      setConfirmOpen(false)
+      router.refresh()
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Failed to delete purchase'
+      )
+    } finally {
+      setDeletingId(null)
+      setSelectedPurchase(null)
+    }
+  }
+
+  return (
+    <>
+      <div className="space-y-4">
+        {purchases.length === 0 ? (
+          <Card className="empty-state">
+            <div>
+              <p className="text-base font-medium text-muted-foreground">No purchases recorded yet.</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Create a purchase to track raw material stock and supplier spending.
+              </p>
+            </div>
+          </Card>
+        ) : (
+          <div className="data-table">
+            <div className="overflow-x-auto">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Purchase</th>
+                    <th>Supplier</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th className="text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {purchases.map((purchase) => (
+                    <tr key={purchase.id} data-testid={`purchase-row-${purchase.id}`}>
+                      <td>
+                        <p className="font-medium text-foreground">{purchase.purchaseNumber}</p>
+                        <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                          {purchase._count.items} item(s)
+                        </p>
+                      </td>
+                      <td className="text-sm text-foreground">
+                        {purchase.supplier?.name || 'N/A'}
+                      </td>
+                      <td className="text-sm text-muted-foreground">
+                        {formatDate(purchase.purchaseDate)}
+                      </td>
+                      <td className="text-sm font-semibold text-foreground">
+                        {formatCurrency(purchase.totalAmount)}
+                      </td>
+                      <td>
+                        <Badge className={statusColors[purchase.paymentStatus]}>
+                          {purchase.paymentStatus.replace('_', ' ')}
+                        </Badge>
+                      </td>
+                      <td>
+                        <div className="flex items-center justify-center gap-1">
+                          <Link href={`/purchases/${purchase.id}`}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-muted-foreground hover:text-foreground"
+                              data-testid={`view-purchase-${purchase.id}`}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </Link>
+                          <Link href={`/purchases/${purchase.id}/edit`}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-muted-foreground hover:text-primary"
+                              data-testid={`edit-purchase-${purchase.id}`}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </Link>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-muted-foreground hover:text-destructive"
+                            onClick={() =>
+                              handleDeleteClick(purchase.id, purchase.purchaseNumber)
+                            }
+                            disabled={deletingId === purchase.id}
+                            data-testid={`delete-purchase-${purchase.id}`}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Purchase"
+        description={`Are you sure you want to delete "${selectedPurchase?.purchaseNumber}"? This action cannot be undone.`}
+        loading={!!deletingId}
+        confirmText="Delete Purchase"
+        loadingText="Deleting..."
+      />
+    </>
   )
 }

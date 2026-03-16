@@ -4,8 +4,24 @@ import { Plus } from 'lucide-react'
 import Link from 'next/link'
 import { SupplierList } from '@/components/suppliers/supplier-list'
 
-export default async function SuppliersPage() {
+export default async function SuppliersPage({
+  searchParams,
+}: {
+  searchParams: { search?: string }
+}) {
+  const search = searchParams.search || ''
+
   const suppliers = await prisma.supplier.findMany({
+    where: search
+      ? {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' } },
+            { contactPerson: { contains: search, mode: 'insensitive' } },
+            { phone: { contains: search } },
+            { email: { contains: search, mode: 'insensitive' } },
+          ],
+        }
+      : undefined,
     include: {
       _count: {
         select: {
@@ -32,7 +48,7 @@ export default async function SuppliersPage() {
         </Link>
       </div>
 
-      <SupplierList suppliers={suppliers} />
+      <SupplierList suppliers={suppliers} initialSearch={search} />
     </div>
   )
 }

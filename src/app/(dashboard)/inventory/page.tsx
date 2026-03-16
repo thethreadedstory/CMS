@@ -4,8 +4,24 @@ import { Plus } from 'lucide-react'
 import Link from 'next/link'
 import { InventoryList } from '@/components/inventory/inventory-list'
 
-export default async function InventoryPage() {
+export default async function InventoryPage({
+  searchParams,
+}: {
+  searchParams: { search?: string }
+}) {
+  const search = searchParams.search || ''
+
   const materials = await prisma.rawMaterial.findMany({
+    where: search
+      ? {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' } },
+            { unit: { contains: search, mode: 'insensitive' } },
+            { category: { is: { name: { contains: search, mode: 'insensitive' } } } },
+            { supplier: { is: { name: { contains: search, mode: 'insensitive' } } } },
+          ],
+        }
+      : undefined,
     select: {
       id: true,
       name: true,
@@ -44,7 +60,7 @@ export default async function InventoryPage() {
         </Link>
       </div>
 
-      <InventoryList materials={materials} />
+      <InventoryList materials={materials} initialSearch={search} />
     </div>
   )
 }
