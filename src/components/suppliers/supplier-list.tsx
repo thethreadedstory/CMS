@@ -1,13 +1,12 @@
 'use client'
 
 import { startTransition, useEffect, useState } from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Search, Eye, Edit, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { deleteSupplier } from '@/app/actions/suppliers'
+import { ActionIconButton, ActionIconLink } from '@/components/ui/action-icon-button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
-import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -149,36 +148,30 @@ export function SupplierList({ suppliers, initialSearch }: SupplierListProps) {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center justify-center gap-1">
-                          <Link href={`/suppliers/${supplier.id}`}>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-muted-foreground hover:text-foreground"
-                              data-testid={`view-supplier-${supplier.id}`}
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          </Link>
-                          <Link href={`/suppliers/${supplier.id}/edit`}>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-muted-foreground hover:text-primary"
-                              data-testid={`edit-supplier-${supplier.id}`}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                          </Link>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-muted-foreground hover:text-destructive"
+                          <ActionIconLink
+                            href={`/suppliers/${supplier.id}`}
+                            label="View supplier"
+                            dataTestId={`view-supplier-${supplier.id}`}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </ActionIconLink>
+                          <ActionIconLink
+                            href={`/suppliers/${supplier.id}/edit`}
+                            label="Edit supplier"
+                            tone="primary"
+                            dataTestId={`edit-supplier-${supplier.id}`}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </ActionIconLink>
+                          <ActionIconButton
+                            label="Delete supplier"
+                            tone="destructive"
                             onClick={() => handleDeleteClick(supplier.id, supplier.name)}
                             disabled={deletingId === supplier.id}
-                            data-testid={`delete-supplier-${supplier.id}`}
+                            dataTestId={`delete-supplier-${supplier.id}`}
                           >
                             <Trash2 className="h-4 w-4" />
-                          </Button>
+                          </ActionIconButton>
                         </div>
                       </TableCell>
                     </TableRow>

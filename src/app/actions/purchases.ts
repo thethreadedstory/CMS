@@ -82,7 +82,6 @@ async function revalidatePurchasePaths(
   revalidatePath('/purchases')
   revalidatePath('/inventory')
   revalidatePath('/suppliers')
-  revalidatePath('/reports')
   revalidatePath('/orders')
   revalidatePath('/purchases/new')
   if (purchaseId) {

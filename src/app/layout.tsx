@@ -12,8 +12,8 @@ const ibmPlexSans = IBM_Plex_Sans({
 })
 
 export const metadata: Metadata = {
-  title: 'Crochet Business Admin Panel',
-  description: 'Manage your crochet business operations',
+  title: 'The Threaded Story Admin Panel',
+  description: 'Manage your Threaded Story business operations',
 }
 
 export default function RootLayout({

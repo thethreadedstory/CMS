@@ -174,6 +174,193 @@
   display: none;
 }
 
+.invoice-print-mode {
+  min-height: 100vh;
+  padding: 24px;
+  background:
+    radial-gradient(circle at top, rgba(191, 219, 254, 0.35), transparent 42%),
+    linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+}
+
+.invoice-print-mode .invoice-print-area {
+  display: block;
+}
+
+.invoice-print-mode .invoice-shell {
+  width: min(100%, 960px);
+  margin: 0 auto;
+  border: 1px solid #1f2937;
+  background: #fff;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
+  padding: 24px;
+  color: #111827;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.invoice-print-mode .invoice-banner {
+  padding-bottom: 16px;
+  text-align: center;
+  border-bottom: 1px solid #1f2937;
+}
+
+.invoice-print-mode .invoice-brand-name {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.invoice-print-mode .invoice-story-title {
+  margin: 8px 0 0;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.invoice-print-mode .invoice-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #1f2937;
+}
+
+.invoice-print-mode .invoice-eyebrow {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.invoice-print-mode .invoice-title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.invoice-print-mode .invoice-meta {
+  margin: 4px 0 0;
+}
+
+.invoice-print-mode .invoice-status-box {
+  min-width: 220px;
+  border: 1px solid #1f2937;
+}
+
+.invoice-print-mode .invoice-status-box > div {
+  padding: 10px 12px;
+}
+
+.invoice-print-mode .invoice-status-box > div + div {
+  border-top: 1px solid #1f2937;
+}
+
+.invoice-print-mode .invoice-status-label,
+.invoice-print-mode .invoice-section-title {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.invoice-print-mode .invoice-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.invoice-print-mode .invoice-card,
+.invoice-print-mode .invoice-notes,
+.invoice-print-mode .invoice-totals-box {
+  border: 1px solid #1f2937;
+  padding: 12px;
+}
+
+.invoice-print-mode .invoice-strong {
+  font-weight: 700;
+}
+
+.invoice-print-mode .invoice-summary-row,
+.invoice-print-mode .invoice-total-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 6px 0;
+}
+
+.invoice-print-mode .invoice-summary-row + .invoice-summary-row {
+  border-top: 1px solid #d1d5db;
+}
+
+.invoice-print-mode .invoice-table-wrap {
+  margin-top: 18px;
+  border: 1px solid #1f2937;
+}
+
+.invoice-print-mode .invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.invoice-print-mode .invoice-table th,
+.invoice-print-mode .invoice-table td {
+  padding: 10px 12px;
+  border-right: 1px solid #1f2937;
+  border-bottom: 1px solid #1f2937;
+  text-align: left;
+  vertical-align: top;
+}
+
+.invoice-print-mode .invoice-table th:last-child,
+.invoice-print-mode .invoice-table td:last-child {
+  border-right: 0;
+}
+
+.invoice-print-mode .invoice-table thead th {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: #f3f4f6;
+}
+
+.invoice-print-mode .invoice-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.invoice-print-mode .invoice-item-name {
+  font-weight: 600;
+}
+
+.invoice-print-mode .invoice-item-meta {
+  color: #4b5563;
+}
+
+.invoice-print-mode .invoice-totals-box {
+  width: min(320px, 100%);
+  margin-top: 18px;
+  margin-left: auto;
+}
+
+.invoice-print-mode .invoice-total-row {
+  margin-top: 6px;
+  border-top: 1px solid #1f2937;
+  padding-top: 10px;
+  font-weight: 700;
+}
+
+.invoice-print-mode .invoice-notes {
+  margin-top: 18px;
+}
+
 @media print {
   @page {
     margin: 12mm;
@@ -181,6 +368,7 @@
 
   body.invoice-print-mode {
     background: #fff !important;
+    padding: 0;
   }
 
   body.invoice-print-mode * {
@@ -193,7 +381,6 @@
   }
 
   body.invoice-print-mode .invoice-print-area {
-    display: block;
     position: absolute;
     inset: 0;
     width: 100%;
@@ -204,11 +391,14 @@
 
   body.invoice-print-mode .invoice-shell {
     width: 100%;
+    max-width: none;
+    margin: 0;
     border: 1px solid #1f2937;
     padding: 24px;
     color: #111827;
     font-size: 12px;
     line-height: 1.5;
+    box-shadow: none;
   }
 
   body.invoice-print-mode .invoice-banner {

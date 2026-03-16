@@ -1,13 +1,13 @@
 'use client'
 
 import { useState } from 'react'
+import { ActionIconButton, ActionIconLink } from '@/components/ui/action-icon-button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Eye, Edit, Trash2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { deletePurchase } from '@/app/actions/purchases'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -142,39 +142,33 @@ export function PurchaseList({ purchases }: PurchaseListProps) {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center justify-center gap-1">
-                          <Link href={`/purchases/${purchase.id}`}>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-muted-foreground hover:text-foreground"
-                              data-testid={`view-purchase-${purchase.id}`}
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          </Link>
-                          <Link href={`/purchases/${purchase.id}/edit`}>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-muted-foreground hover:text-primary"
-                              data-testid={`edit-purchase-${purchase.id}`}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                          </Link>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-muted-foreground hover:text-destructive"
+                          <ActionIconLink
+                            href={`/purchases/${purchase.id}`}
+                            label="View purchase"
+                            dataTestId={`view-purchase-${purchase.id}`}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </ActionIconLink>
+                          <ActionIconLink
+                            href={`/purchases/${purchase.id}/edit`}
+                            label="Edit purchase"
+                            tone="primary"
+                            dataTestId={`edit-purchase-${purchase.id}`}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </ActionIconLink>
+                          <ActionIconButton
+                            label="Delete purchase"
+                            tone="destructive"
                             onClick={() =>
                               handleDeleteClick(purchase.id, purchase.purchaseNumber)
                             }
                             disabled={deletingId === purchase.id}
-                            data-testid={`delete-purchase-${purchase.id}`}
+                            dataTestId={`delete-purchase-${purchase.id}`}
                           >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
+                            <Trash2 className="h-4 w-4" />
+                          </ActionIconButton>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}

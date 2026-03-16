@@ -1,13 +1,12 @@
 'use client'
 
 import { startTransition, useEffect, useState } from 'react'
+import { ActionIconButton, ActionIconLink } from '@/components/ui/action-icon-button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Search, Eye, Edit, Trash2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { deleteCustomer } from '@/app/actions/customers'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -145,26 +144,30 @@ export function CustomerList({ customers, initialSearch }: CustomerListProps) {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center justify-center gap-1">
-                          <Link href={`/customers/${customer.id}`}>
-                            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground" data-testid={`view-customer-${customer.id}`}>
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          </Link>
-                          <Link href={`/customers/${customer.id}/edit`}>
-                            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary" data-testid={`edit-customer-${customer.id}`}>
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                          </Link>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-muted-foreground hover:text-destructive"
+                          <ActionIconLink
+                            href={`/customers/${customer.id}`}
+                            label="View customer"
+                            dataTestId={`view-customer-${customer.id}`}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </ActionIconLink>
+                          <ActionIconLink
+                            href={`/customers/${customer.id}/edit`}
+                            label="Edit customer"
+                            tone="primary"
+                            dataTestId={`edit-customer-${customer.id}`}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </ActionIconLink>
+                          <ActionIconButton
+                            label="Delete customer"
+                            tone="destructive"
                             onClick={() => handleDeleteClick(customer.id, customer.name)}
                             disabled={deletingId === customer.id}
-                            data-testid={`delete-customer-${customer.id}`}
+                            dataTestId={`delete-customer-${customer.id}`}
                           >
                             <Trash2 className="h-4 w-4" />
-                          </Button>
+                          </ActionIconButton>
                         </div>
                       </TableCell>
                     </TableRow>

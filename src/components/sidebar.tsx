@@ -14,7 +14,6 @@ import {
   CreditCard,
   Box,
   ShoppingBag,
-  FileText,
   Store,
   PanelLeftClose,
   PanelLeftOpen,
@@ -29,7 +28,6 @@ const navigation = [
   { name: 'Raw Materials', href: '/inventory', icon: Box },
   { name: 'Purchases', href: '/purchases', icon: ShoppingBag },
   { name: 'Suppliers', href: '/suppliers', icon: Store },
-  { name: 'Reports', href: '/reports', icon: FileText },
 ]
 
 export function Sidebar() {
@@ -68,7 +66,7 @@ export function Sidebar() {
         <div className="flex items-center justify-between gap-3">
           <div className={cn('min-w-0', collapsed && 'lg:hidden')}>
             <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[hsl(var(--sidebar-foreground))]/65">
-              Crochet Business
+              The Threaded Story
             </p>
             <h1 className="text-lg font-semibold text-[hsl(var(--sidebar-foreground))]">
               Admin Panel

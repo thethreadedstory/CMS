@@ -44,7 +44,7 @@ export function DashboardStats({ stats }: StatsProps) {
       iconBg: 'rgba(5,150,105,0.1)',
       cardBg: 'rgba(5,150,105,0.03)',
       accentColor: '#059669',
-      href: '/reports',
+      href: '/dashboard',
     },
     {
       title: 'Total Purchases',
@@ -64,7 +64,7 @@ export function DashboardStats({ stats }: StatsProps) {
       iconBg: 'rgba(13,148,136,0.1)',
       cardBg: 'rgba(13,148,136,0.03)',
       accentColor: '#0d9488',
-      href: '/reports',
+      href: '/dashboard',
     },
     {
       title: 'Pending Payments',

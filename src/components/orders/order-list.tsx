@@ -3,11 +3,11 @@
 import { startTransition, useEffect, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { OrderInvoiceActionButton } from '@/components/orders/order-invoice-action-button'
 import { SelectField } from '@/components/ui/select-field'
+import { ActionIconButton, ActionIconLink } from '@/components/ui/action-icon-button'
 import { formatCurrency, formatDate } from '@/lib/utils'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Search, Eye, Edit, Trash2 } from 'lucide-react'
 import { deleteOrder } from '@/app/actions/orders'
@@ -228,27 +228,32 @@ export function OrderList({
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center justify-center gap-1">
-                        <Link href={`/orders/${order.id}`}>
-                          <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground" data-testid={`view-order-${order.id}`}>
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </Link>
-                        <Link href={`/orders/${order.id}/edit`}>
-                          <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary" data-testid={`edit-order-${order.id}`}>
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        </Link>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-muted-foreground hover:text-destructive"
+                        <ActionIconLink
+                          href={`/orders/${order.id}`}
+                          label="View order"
+                          dataTestId={`view-order-${order.id}`}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </ActionIconLink>
+                        <OrderInvoiceActionButton orderId={order.id} />
+                        <ActionIconLink
+                          href={`/orders/${order.id}/edit`}
+                          label="Edit order"
+                          tone="primary"
+                          dataTestId={`edit-order-${order.id}`}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </ActionIconLink>
+                        <ActionIconButton
+                          label="Delete order"
+                          tone="destructive"
                           onClick={() => handleDeleteClick(order.id, order.orderNumber)}
                           disabled={deletingId === order.id}
-                          data-testid={`delete-order-${order.id}`}
+                          dataTestId={`delete-order-${order.id}`}
                         >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
+                          <Trash2 className="h-4 w-4" />
+                        </ActionIconButton>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

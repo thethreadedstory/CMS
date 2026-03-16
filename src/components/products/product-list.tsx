@@ -1,14 +1,13 @@
 'use client'
 
 import { startTransition, useEffect, useState } from 'react'
+import { ActionIconButton, ActionIconLink } from '@/components/ui/action-icon-button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { SelectField } from '@/components/ui/select-field'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Search, Eye, Edit, Trash2, AlertCircle } from 'lucide-react'
 import { deleteProduct } from '@/app/actions/products'
@@ -190,27 +189,31 @@ export function ProductList({
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center justify-center gap-1">
-                            <Link href={`/products/${product.id}`}>
-                              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground" data-testid={`view-product-${product.id}`}>
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                            </Link>
-                            <Link href={`/products/${product.id}/edit`}>
-                              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary" data-testid={`edit-product-${product.id}`}>
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                            </Link>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-muted-foreground hover:text-destructive"
+                            <ActionIconLink
+                              href={`/products/${product.id}`}
+                              label="View product"
+                              dataTestId={`view-product-${product.id}`}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </ActionIconLink>
+                            <ActionIconLink
+                              href={`/products/${product.id}/edit`}
+                              label="Edit product"
+                              tone="primary"
+                              dataTestId={`edit-product-${product.id}`}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </ActionIconLink>
+                            <ActionIconButton
+                              label="Delete product"
+                              tone="destructive"
                               onClick={() => handleDeleteClick(product.id, product.name)}
                               disabled={deletingId === product.id}
-                              data-testid={`delete-product-${product.id}`}
+                              dataTestId={`delete-product-${product.id}`}
                             >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
+                              <Trash2 className="h-4 w-4" />
+                            </ActionIconButton>
+                          </div>
                         </TableCell>
                       </TableRow>
                     )

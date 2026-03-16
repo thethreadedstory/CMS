@@ -1,13 +1,12 @@
 'use client'
 
 import { startTransition, useEffect, useState } from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Search, Eye, Edit, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { deleteRawMaterial } from '@/app/actions/raw-materials'
+import { ActionIconButton, ActionIconLink } from '@/components/ui/action-icon-button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
-import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -116,37 +115,31 @@ export function InventoryList({ materials, initialSearch }: InventoryListProps) 
                         <TableCell className="text-sm text-muted-foreground">{material.unit}</TableCell>
                         <TableCell>
                           <div className="flex items-center justify-center gap-1">
-                            <Link href={`/inventory/${material.id}`}>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-muted-foreground hover:text-foreground"
-                                data-testid={`view-material-${material.id}`}
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                            </Link>
-                            <Link href={`/inventory/${material.id}/edit`}>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-muted-foreground hover:text-primary"
-                                data-testid={`edit-material-${material.id}`}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                            </Link>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-muted-foreground hover:text-destructive"
+                            <ActionIconLink
+                              href={`/inventory/${material.id}`}
+                              label="View material"
+                              dataTestId={`view-material-${material.id}`}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </ActionIconLink>
+                            <ActionIconLink
+                              href={`/inventory/${material.id}/edit`}
+                              label="Edit material"
+                              tone="primary"
+                              dataTestId={`edit-material-${material.id}`}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </ActionIconLink>
+                            <ActionIconButton
+                              label="Delete material"
+                              tone="destructive"
                               onClick={() => handleDeleteClick(material.id, material.name)}
                               disabled={deletingId === material.id}
-                              data-testid={`delete-material-${material.id}`}
+                              dataTestId={`delete-material-${material.id}`}
                             >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
+                              <Trash2 className="h-4 w-4" />
+                            </ActionIconButton>
+                          </div>
                         </TableCell>
                       </TableRow>
                     )

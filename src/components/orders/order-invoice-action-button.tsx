@@ -3,13 +3,15 @@
 import { useState } from 'react'
 import { Download, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
+import { ActionIconButton } from '@/components/ui/action-icon-button'
 
-type PrintInvoiceButtonProps = {
+type OrderInvoiceActionButtonProps = {
   orderId: string
 }
 
-export function PrintInvoiceButton({ orderId }: PrintInvoiceButtonProps) {
+export function OrderInvoiceActionButton({
+  orderId,
+}: OrderInvoiceActionButtonProps) {
   const [isDownloading, setIsDownloading] = useState(false)
 
   const handleDownload = async () => {
@@ -45,18 +47,17 @@ export function PrintInvoiceButton({ orderId }: PrintInvoiceButtonProps) {
   }
 
   return (
-    <Button
-      variant="outline"
+    <ActionIconButton
+      label={isDownloading ? 'Generating invoice…' : 'Download invoice'}
       onClick={handleDownload}
       disabled={isDownloading}
-      data-testid="print-invoice-button"
+      dataTestId={`download-order-${orderId}`}
     >
       {isDownloading ? (
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        <Loader2 className="h-4 w-4 animate-spin" />
       ) : (
-        <Download className="mr-2 h-4 w-4" />
+        <Download className="h-4 w-4" />
       )}
-      {isDownloading ? 'Generating…' : 'Download Invoice'}
-    </Button>
+    </ActionIconButton>
   )
 }

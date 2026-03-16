@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { ActionIconButton } from '@/components/ui/action-icon-button'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -172,23 +173,25 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
                 {category._count.products} product(s)
               </p>
               <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
+                <ActionIconButton
+                  label="Edit category"
                   onClick={() => handleEdit(category)}
-                  data-testid={`edit-category-${category.id}`}
+                  tone="primary"
+                  variant="outline"
+                  dataTestId={`edit-category-${category.id}`}
                 >
                   <Edit className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
+                </ActionIconButton>
+                <ActionIconButton
+                  label="Delete category"
                   onClick={() => handleDeleteClick(category.id, category.name)}
                   disabled={category._count.products > 0 || deletingId === category.id}
-                  data-testid={`delete-category-${category.id}`}
+                  tone="destructive"
+                  variant="outline"
+                  dataTestId={`delete-category-${category.id}`}
                 >
                   <Trash2 className="h-4 w-4" />
-                </Button>
+                </ActionIconButton>
               </div>
             </CardContent>
           </Card>
