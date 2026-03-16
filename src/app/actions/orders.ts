@@ -94,6 +94,53 @@ export async function updateOrderStatus(orderId: string, status: string) {
   revalidatePath('/dashboard')
 }
 
+export async function updateOrder(orderId: string, formData: FormData) {
+  const customerId = formData.get('customerId') as string
+  const orderDate = new Date(formData.get('orderDate') as string)
+  const subtotal = parseFloat(formData.get('subtotal') as string)
+  const discount = parseFloat(formData.get('discount') as string)
+  const shippingCharge = parseFloat(formData.get('shippingCharge') as string)
+  const totalAmount = parseFloat(formData.get('totalAmount') as string)
+  const paidAmount = parseFloat(formData.get('paidAmount') as string)
+  const pendingAmount = parseFloat(formData.get('pendingAmount') as string)
+  const paymentStatus = formData.get('paymentStatus') as string
+  const notes = formData.get('notes') as string | null
+  const itemsJson = formData.get('items') as string
+  const items = JSON.parse(itemsJson)
+
+  // Delete existing items and recreate
+  await prisma.orderItem.deleteMany({ where: { orderId } })
+
+  await prisma.order.update({
+    where: { id: orderId },
+    data: {
+      customerId,
+      orderDate,
+      subtotal,
+      discount,
+      shippingCharge,
+      totalAmount,
+      paidAmount,
+      pendingAmount,
+      paymentStatus: paymentStatus as any,
+      notes: notes || null,
+      items: {
+        create: items.map((item: any) => ({
+          productId: item.productId,
+          variantId: item.variantId || null,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          total: item.quantity * item.unitPrice,
+        })),
+      },
+    },
+  })
+
+  revalidatePath('/orders')
+  revalidatePath(`/orders/${orderId}`)
+  revalidatePath('/dashboard')
+}
+
 export async function deleteOrder(orderId: string) {
   await prisma.order.delete({
     where: { id: orderId },

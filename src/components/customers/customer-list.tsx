@@ -51,11 +51,11 @@ export function CustomerList({ customers, initialSearch }: CustomerListProps) {
     if (!selectedCustomer) return
     
     setDeletingId(selectedCustomer.id)
-    setConfirmOpen(false)
     
     try {
       await deleteCustomer(selectedCustomer.id)
       toast.success(`Customer "${selectedCustomer.name}" deleted successfully`)
+      setConfirmOpen(false)
       router.refresh()
     } catch (error) {
       toast.error('Failed to delete customer. They may have existing orders.')
@@ -181,6 +181,9 @@ export function CustomerList({ customers, initialSearch }: CustomerListProps) {
         onConfirm={handleDeleteConfirm}
         title="Delete Customer"
         description={`Are you sure you want to delete "${selectedCustomer?.name}"? This action cannot be undone.`}
+        loading={!!deletingId}
+        confirmText="Delete Customer"
+        loadingText="Deleting..."
       />
     </>
   )

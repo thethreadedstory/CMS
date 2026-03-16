@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
 import { createCustomer, updateCustomer } from '@/app/actions/customers'
+import { Loader2 } from 'lucide-react'
 
 interface Customer {
   id: string
@@ -135,7 +136,14 @@ export function CustomerForm({ customer }: CustomerFormProps) {
 
           <div className="flex items-center gap-4">
             <Button type="submit" disabled={loading} data-testid="save-customer-button">
-              {loading ? 'Saving...' : customer ? 'Update Customer' : 'Add Customer'}
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                customer ? 'Update Customer' : 'Add Customer'
+              )}
             </Button>
             <Button
               type="button"

@@ -93,11 +93,11 @@ export function OrderList({
     if (!selectedOrder) return
     
     setDeletingId(selectedOrder.id)
-    setConfirmOpen(false)
     
     try {
       await deleteOrder(selectedOrder.id)
       toast.success(`Order "${selectedOrder.orderNumber}" deleted successfully`)
+      setConfirmOpen(false)
       router.refresh()
     } catch (error) {
       toast.error('Failed to delete order')
@@ -265,6 +265,9 @@ export function OrderList({
       onConfirm={handleDeleteConfirm}
       title="Delete Order"
       description={`Are you sure you want to delete order "${selectedOrder?.orderNumber}"? This action cannot be undone.`}
+      loading={!!deletingId}
+      confirmText="Delete Order"
+      loadingText="Deleting..."
     />
   </>
   )

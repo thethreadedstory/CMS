@@ -5,9 +5,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Plus, Edit, Trash2 } from 'lucide-react'
+import { Plus, Edit, Trash2, Loader2 } from 'lucide-react'
 import { createCategory, updateCategory, deleteCategory } from '@/app/actions/categories'
 import { useRouter } from 'next/navigation'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { toast } from 'sonner'
 
 interface Category {
   id: string
@@ -28,6 +30,9 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formData, setFormData] = useState({ name: '', description: '' })
   const [loading, setLoading] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState<{ id: string; name: string } | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -40,8 +45,10 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
 
       if (editingId) {
         await updateCategory(editingId, data)
+        toast.success('Category updated successfully')
       } else {
         await createCategory(data)
+        toast.success('Category created successfully')
       }
 
       setFormData({ name: '', description: '' })
@@ -49,7 +56,7 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
       setEditingId(null)
       router.refresh()
     } catch (error) {
-      alert('Failed to save category')
+      toast.error('Failed to save category')
     } finally {
       setLoading(false)
     }
@@ -64,10 +71,24 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
     setShowForm(true)
   }
 
-  const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this category?')) {
-      await deleteCategory(id)
+  const handleDeleteClick = (id: string, name: string) => {
+    setSelectedCategory({ id, name })
+    setConfirmOpen(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedCategory) return
+    setDeletingId(selectedCategory.id)
+    try {
+      await deleteCategory(selectedCategory.id)
+      toast.success(`Category "${selectedCategory.name}" deleted successfully`)
+      setConfirmOpen(false)
       router.refresh()
+    } catch (error) {
+      toast.error('Failed to delete category')
+    } finally {
+      setDeletingId(null)
+      setSelectedCategory(null)
     }
   }
 
@@ -108,7 +129,14 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
               </div>
               <div className="flex gap-2">
                 <Button type="submit" disabled={loading} data-testid="save-category-button">
-                  {loading ? 'Saving...' : editingId ? 'Update' : 'Add'} Category
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    `${editingId ? 'Update' : 'Add'} Category`
+                  )}
                 </Button>
                 <Button
                   type="button"
@@ -155,8 +183,8 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handleDelete(category.id)}
-                  disabled={category._count.products > 0}
+                  onClick={() => handleDeleteClick(category.id, category.name)}
+                  disabled={category._count.products > 0 || deletingId === category.id}
                   data-testid={`delete-category-${category.id}`}
                 >
                   <Trash2 className="h-4 w-4" />
@@ -166,6 +194,17 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
           </Card>
         ))}
       </div>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Category"
+        description={`Are you sure you want to delete "${selectedCategory?.name}"? This action cannot be undone.`}
+        loading={!!deletingId}
+        confirmText="Delete Category"
+        loadingText="Deleting..."
+      />
     </div>
   )
 }

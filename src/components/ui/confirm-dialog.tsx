@@ -10,6 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { Loader2 } from 'lucide-react'
 
 interface ConfirmDialogProps {
   open: boolean
@@ -19,6 +20,9 @@ interface ConfirmDialogProps {
   description: string
   confirmText?: string
   cancelText?: string
+  loadingText?: string
+  variant?: 'destructive' | 'default'
+  loading?: boolean
 }
 
 export function ConfirmDialog({
@@ -29,21 +33,36 @@ export function ConfirmDialog({
   description,
   confirmText = 'Delete',
   cancelText = 'Cancel',
+  loadingText,
+  variant = 'destructive',
+  loading = false,
 }: ConfirmDialogProps) {
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialog open={open} onOpenChange={loading ? undefined : onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>{cancelText}</AlertDialogCancel>
+          <AlertDialogCancel disabled={loading}>{cancelText}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90 focus-visible:ring-destructive"
+            disabled={loading}
+            className={
+              variant === 'destructive'
+                ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90 focus-visible:ring-destructive'
+                : undefined
+            }
           >
-            {confirmText}
+            {loading ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                {loadingText ?? `${confirmText}...`}
+              </>
+            ) : (
+              confirmText
+            )}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

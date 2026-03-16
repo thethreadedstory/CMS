@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { createProduct, updateProduct } from '@/app/actions/products'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, Loader2 } from 'lucide-react'
 
 interface ProductVariant {
   id?: string
@@ -347,7 +347,14 @@ export function ProductForm({ product, categories }: ProductFormProps) {
 
       <div className="flex items-center gap-4">
         <Button type="submit" disabled={loading} data-testid="save-product-button">
-          {loading ? 'Saving...' : product ? 'Update Product' : 'Add Product'}
+          {loading ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            product ? 'Update Product' : 'Add Product'
+          )}
         </Button>
         <Button
           type="button"

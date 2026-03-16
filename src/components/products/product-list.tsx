@@ -63,11 +63,11 @@ export function ProductList({
     if (!selectedProduct) return
     
     setDeletingId(selectedProduct.id)
-    setConfirmOpen(false)
     
     try {
       await deleteProduct(selectedProduct.id)
       toast.success(`Product "${selectedProduct.name}" deleted successfully`)
+      setConfirmOpen(false)
       router.refresh()
     } catch (error) {
       toast.error('Failed to delete product. It may be used in orders.')
@@ -227,6 +227,9 @@ export function ProductList({
         onConfirm={handleDeleteConfirm}
         title="Delete Product"
         description={`Are you sure you want to delete "${selectedProduct?.name}"? This action cannot be undone.`}
+        loading={!!deletingId}
+        confirmText="Delete Product"
+        loadingText="Deleting..."
       />
     </>
   )

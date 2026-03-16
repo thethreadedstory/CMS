@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { createOrder } from '@/app/actions/orders'
+import { updateOrder } from '@/app/actions/orders'
 import { Plus, Trash2, Calculator, Loader2 } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 
@@ -43,26 +43,56 @@ interface OrderItem {
   unitPrice: number
 }
 
-interface OrderFormProps {
-  customers: Customer[]
-  products: Product[]
+interface ExistingOrderItem {
+  id: string
+  productId: string
+  variantId: string | null
+  quantity: number
+  unitPrice: number
+  total: number
 }
 
-export function OrderForm({ customers, products }: OrderFormProps) {
+interface EditOrderFormProps {
+  orderId: string
+  customers: Customer[]
+  products: Product[]
+  initialData: {
+    customerId: string
+    orderDate: string
+    subtotal: number
+    discount: number
+    shippingCharge: number
+    totalAmount: number
+    paidAmount: number
+    pendingAmount: number
+    paymentStatus: string
+    notes: string
+    items: ExistingOrderItem[]
+  }
+}
+
+export function EditOrderForm({ orderId, customers, products, initialData }: EditOrderFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  
-  const [customerId, setCustomerId] = useState('')
-  const [orderDate, setOrderDate] = useState(new Date().toISOString().split('T')[0])
-  const [items, setItems] = useState<OrderItem[]>([])
-  const [discount, setDiscount] = useState(0)
-  const [shippingCharge, setShippingCharge] = useState(0)
-  const [paidAmount, setPaidAmount] = useState(0)
-  const [notes, setNotes] = useState('')
+
+  const [customerId, setCustomerId] = useState(initialData.customerId)
+  const [orderDate, setOrderDate] = useState(initialData.orderDate)
+  const [items, setItems] = useState<OrderItem[]>(
+    initialData.items.map((item) => ({
+      productId: item.productId,
+      variantId: item.variantId ?? '',
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+    }))
+  )
+  const [discount, setDiscount] = useState(initialData.discount)
+  const [shippingCharge, setShippingCharge] = useState(initialData.shippingCharge)
+  const [paidAmount, setPaidAmount] = useState(initialData.paidAmount)
+  const [notes, setNotes] = useState(initialData.notes)
 
   const subtotal = useMemo(() => {
-    return items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0)
+    return items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0)
   }, [items])
 
   const total = useMemo(() => {
@@ -92,27 +122,22 @@ export function OrderForm({ customers, products }: OrderFormProps) {
     newItems[index] = { ...newItems[index], [field]: value }
 
     if (field === 'productId') {
-      const product = products.find(p => p.id === value)
-      // Reset variant selection
+      const product = products.find((p) => p.id === value)
       newItems[index].variantId = ''
       if (product) {
-        // If product has variants, don't pre-fill price — wait for variant selection
-        // If no variants, use the product's selling price directly
         newItems[index].unitPrice = product.variants.length > 0 ? 0 : product.sellingPrice
       }
     }
 
     if (field === 'variantId') {
-      const product = products.find(p => p.id === newItems[index].productId)
+      const product = products.find((p) => p.id === newItems[index].productId)
       if (product) {
         if (value) {
-          // Use the variant's own standalone price
-          const variant = product.variants.find(v => v.id === value)
+          const variant = product.variants.find((v) => v.id === value)
           if (variant) {
             newItems[index].unitPrice = variant.price
           }
         } else {
-          // Variant deselected — fall back to product base price
           newItems[index].unitPrice = product.sellingPrice
         }
       }
@@ -122,10 +147,10 @@ export function OrderForm({ customers, products }: OrderFormProps) {
   }
 
   const getAvailableStock = (item: OrderItem): number => {
-    const product = products.find(p => p.id === item.productId)
+    const product = products.find((p) => p.id === item.productId)
     if (!product) return 0
     if (item.variantId) {
-      const variant = product.variants.find(v => v.id === item.variantId)
+      const variant = product.variants.find((v) => v.id === item.variantId)
       return variant?.stock ?? 0
     }
     return product.currentStock
@@ -133,25 +158,24 @@ export function OrderForm({ customers, products }: OrderFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!customerId) {
       setError('Please select a customer')
       return
     }
-    
+
     if (items.length === 0) {
       setError('Please add at least one item')
       return
     }
-    
-    if (items.some(item => !item.productId || item.quantity <= 0)) {
+
+    if (items.some((item) => !item.productId || item.quantity <= 0)) {
       setError('Please complete all item details')
       return
     }
 
-    // Validate: if product has variants, a variant must be selected
-    const missingVariant = items.some(item => {
-      const product = products.find(p => p.id === item.productId)
+    const missingVariant = items.some((item) => {
+      const product = products.find((p) => p.id === item.productId)
       return product && product.variants.length > 0 && !item.variantId
     })
     if (missingVariant) {
@@ -176,11 +200,11 @@ export function OrderForm({ customers, products }: OrderFormProps) {
       formData.append('notes', notes)
       formData.append('items', JSON.stringify(items))
 
-      await createOrder(formData)
-      router.push('/orders')
+      await updateOrder(orderId, formData)
+      router.push(`/orders/${orderId}`)
       router.refresh()
     } catch {
-      setError('Failed to create order. Please try again.')
+      setError('Failed to update order. Please try again.')
       setLoading(false)
     }
   }
@@ -209,7 +233,6 @@ export function OrderForm({ customers, products }: OrderFormProps) {
                 onChange={(e) => setCustomerId(e.target.value)}
                 required
                 className="field-select"
-                data-testid="order-customer-select"
               >
                 <option value="">Select a customer</option>
                 {customers.map((customer) => (
@@ -227,7 +250,6 @@ export function OrderForm({ customers, products }: OrderFormProps) {
                 type="date"
                 value={orderDate}
                 onChange={(e) => setOrderDate(e.target.value)}
-                data-testid="order-date-input"
               />
             </div>
           </div>
@@ -238,7 +260,7 @@ export function OrderForm({ customers, products }: OrderFormProps) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Order Items</CardTitle>
-            <Button type="button" onClick={addItem} variant="outline" size="sm" data-testid="add-order-item-button">
+            <Button type="button" onClick={addItem} variant="outline" size="sm">
               <Plus className="h-4 w-4 mr-2" />
               Add Item
             </Button>
@@ -246,17 +268,22 @@ export function OrderForm({ customers, products }: OrderFormProps) {
         </CardHeader>
         <CardContent className="pt-0">
           {items.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No items added. Click "Add Item" to add products to this order.</p>
+            <p className="text-sm text-muted-foreground">
+              No items added. Click &quot;Add Item&quot; to add products to this order.
+            </p>
           ) : (
             <div className="space-y-4">
               {items.map((item, index) => {
-                const product = products.find(p => p.id === item.productId)
+                const product = products.find((p) => p.id === item.productId)
                 const hasVariants = (product?.variants.length ?? 0) > 0
                 const availableStock = getAvailableStock(item)
                 const itemTotal = item.quantity * item.unitPrice
 
                 return (
-                  <div key={index} className="space-y-4 rounded-[1.4rem] border border-border/75 bg-[hsl(var(--surface-soft))]/55 p-4">
+                  <div
+                    key={index}
+                    className="space-y-4 rounded-[1.4rem] border border-border/75 bg-[hsl(var(--surface-soft))]/55 p-4"
+                  >
                     <div className="flex items-center justify-between">
                       <h4 className="font-medium text-foreground">Item {index + 1}</h4>
                       <Button
@@ -270,9 +297,8 @@ export function OrderForm({ customers, products }: OrderFormProps) {
                       </Button>
                     </div>
 
-                    <div className={`grid grid-cols-1 gap-4 ${hasVariants ? 'md:grid-cols-4' : 'md:grid-cols-4'}`}>
-                      {/* Product selector */}
-                      <div className={hasVariants ? 'md:col-span-2' : 'md:col-span-2'}>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+                      <div className="md:col-span-2">
                         <Label>Product</Label>
                         <select
                           value={item.productId}
@@ -292,7 +318,6 @@ export function OrderForm({ customers, products }: OrderFormProps) {
                         </select>
                       </div>
 
-                      {/* Variant selector — only shown when product has variants */}
                       {hasVariants && (
                         <div className="md:col-span-2">
                           <Label>
@@ -307,7 +332,8 @@ export function OrderForm({ customers, products }: OrderFormProps) {
                             <option value="">Select variant</option>
                             {product?.variants.map((v) => (
                               <option key={v.id} value={v.id}>
-                                {v.variantType}: {v.variantValue} — {formatCurrency(v.price)} (Stock: {v.stock})
+                                {v.variantType}: {v.variantValue} — {formatCurrency(v.price)} (Stock:{' '}
+                                {v.stock})
                               </option>
                             ))}
                           </select>
@@ -317,7 +343,6 @@ export function OrderForm({ customers, products }: OrderFormProps) {
                         </div>
                       )}
 
-                      {/* Stock warning for products without variants */}
                       {!hasVariants && product && availableStock < item.quantity && (
                         <div className="md:col-span-2 flex items-end">
                           <p className="text-xs text-destructive pb-1">Insufficient stock!</p>
@@ -326,7 +351,6 @@ export function OrderForm({ customers, products }: OrderFormProps) {
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {/* Stock info badge */}
                       {product && (
                         <div className="col-span-2 flex items-center gap-2">
                           <span className="text-xs text-muted-foreground">
@@ -345,7 +369,9 @@ export function OrderForm({ customers, products }: OrderFormProps) {
                           type="number"
                           min="1"
                           value={item.quantity}
-                          onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 1)}
+                          onChange={(e) =>
+                            updateItem(index, 'quantity', parseInt(e.target.value) || 1)
+                          }
                           required
                         />
                       </div>
@@ -357,7 +383,9 @@ export function OrderForm({ customers, products }: OrderFormProps) {
                           step="0.01"
                           min="0"
                           value={item.unitPrice}
-                          onChange={(e) => updateItem(index, 'unitPrice', parseFloat(e.target.value) || 0)}
+                          onChange={(e) =>
+                            updateItem(index, 'unitPrice', parseFloat(e.target.value) || 0)
+                          }
                           required
                         />
                       </div>
@@ -393,7 +421,6 @@ export function OrderForm({ customers, products }: OrderFormProps) {
                 min="0"
                 value={discount}
                 onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
-                data-testid="order-discount-input"
               />
             </div>
 
@@ -406,7 +433,6 @@ export function OrderForm({ customers, products }: OrderFormProps) {
                 min="0"
                 value={shippingCharge}
                 onChange={(e) => setShippingCharge(parseFloat(e.target.value) || 0)}
-                data-testid="order-shipping-input"
               />
             </div>
 
@@ -420,7 +446,6 @@ export function OrderForm({ customers, products }: OrderFormProps) {
                 max={total}
                 value={paidAmount}
                 onChange={(e) => setPaidAmount(parseFloat(e.target.value) || 0)}
-                data-testid="order-paid-amount-input"
               />
             </div>
           </div>
@@ -448,17 +473,23 @@ export function OrderForm({ customers, products }: OrderFormProps) {
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Pending:</span>
-              <span className={`font-medium ${pending > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
+              <span
+                className={`font-medium ${pending > 0 ? 'text-destructive' : 'text-muted-foreground'}`}
+              >
                 {formatCurrency(pending)}
               </span>
             </div>
             <div className="flex justify-between border-t border-border/70 pt-2 text-sm">
               <span className="text-muted-foreground">Payment Status:</span>
-              <span className={`font-semibold ${
-                paymentStatus === 'PAID' ? 'text-emerald-700' :
-                paymentStatus === 'PARTIALLY_PAID' ? 'text-amber-700' :
-                'text-destructive'
-              }`}>
+              <span
+                className={`font-semibold ${
+                  paymentStatus === 'PAID'
+                    ? 'text-emerald-700'
+                    : paymentStatus === 'PARTIALLY_PAID'
+                    ? 'text-amber-700'
+                    : 'text-destructive'
+                }`}
+              >
                 {paymentStatus.replace('_', ' ')}
               </span>
             </div>
@@ -473,27 +504,26 @@ export function OrderForm({ customers, products }: OrderFormProps) {
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Add any notes about this order..."
               className="field-textarea"
-              data-testid="order-notes-input"
             />
           </div>
         </CardContent>
       </Card>
 
       <div className="flex items-center gap-4">
-        <Button type="submit" disabled={loading} data-testid="save-order-button">
+        <Button type="submit" disabled={loading}>
           {loading ? (
             <>
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Creating...
+              Saving...
             </>
           ) : (
-            'Create Order'
+            'Save Changes'
           )}
         </Button>
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push('/orders')}
+          onClick={() => router.push(`/orders/${orderId}`)}
           disabled={loading}
         >
           Cancel
