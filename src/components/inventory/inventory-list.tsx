@@ -10,6 +10,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 interface Material {
   id: string
@@ -99,21 +100,21 @@ export function InventoryList({ materials, initialSearch }: InventoryListProps) 
         ) : (
           <div className="data-table">
             <div className="overflow-x-auto">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Material</th>
-                    <th>Unit</th>
-                    <th className="text-center">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
+              <Table>
+                <TableHeader className="bg-[hsl(var(--surface-soft))]">
+                  <TableRow>
+                    <TableHead>Material</TableHead>
+                    <TableHead>Unit</TableHead>
+                    <TableHead className="text-center">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {materials.map((material) => {
                     return (
-                      <tr key={material.id} data-testid={`material-row-${material.id}`}>
-                        <td className="font-medium text-foreground">{material.name}</td>
-                        <td className="text-sm text-muted-foreground">{material.unit}</td>
-                        <td>
+                      <TableRow key={material.id} data-testid={`material-row-${material.id}`}>
+                        <TableCell className="font-medium text-foreground">{material.name}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">{material.unit}</TableCell>
+                        <TableCell>
                           <div className="flex items-center justify-center gap-1">
                             <Link href={`/inventory/${material.id}`}>
                               <Button
@@ -143,15 +144,15 @@ export function InventoryList({ materials, initialSearch }: InventoryListProps) 
                               disabled={deletingId === material.id}
                               data-testid={`delete-material-${material.id}`}
                             >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                        </TableCell>
+                      </TableRow>
                     )
                   })}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
           </div>
         )}

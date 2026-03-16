@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import NProgress from 'nprogress'
+import { Button } from '@/components/ui/button'
 import {
   LayoutDashboard,
   Users,
@@ -73,22 +74,26 @@ export function Sidebar() {
               Admin Panel
             </h1>
           </div>
-          <button
+          <Button
             type="button"
             onClick={() => setMobileOpen((current) => !current)}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-white/10 bg-white/5 text-[hsl(var(--sidebar-foreground))] lg:hidden"
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 border border-white/10 bg-white/5 text-[hsl(var(--sidebar-foreground))] hover:bg-white/10 hover:text-[hsl(var(--sidebar-foreground))] lg:hidden"
             aria-label="Toggle navigation"
           >
             {mobileOpen ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={toggleCollapsed}
-            className="hidden h-9 w-9 items-center justify-center rounded-md border border-white/10 bg-white/5 text-[hsl(var(--sidebar-foreground))] lg:inline-flex"
+            variant="ghost"
+            size="icon"
+            className="hidden h-9 w-9 border border-white/10 bg-white/5 text-[hsl(var(--sidebar-foreground))] hover:bg-white/10 hover:text-[hsl(var(--sidebar-foreground))] lg:inline-flex"
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             {collapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
-          </button>
+          </Button>
         </div>
         {!collapsed && (
           <p className="mt-3 hidden text-xs leading-5 text-[hsl(var(--sidebar-foreground))]/65 lg:block">

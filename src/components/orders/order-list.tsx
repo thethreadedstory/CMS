@@ -5,12 +5,14 @@ import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { SelectField } from '@/components/ui/select-field'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Search, Eye, Edit, Trash2 } from 'lucide-react'
 import { deleteOrder } from '@/app/actions/orders'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { toast } from 'sonner'
 
 interface Order {
@@ -131,39 +133,43 @@ export function OrderList({
             data-testid="order-search-input"
           />
         </div>
-        <select
+        <SelectField
           value={status}
-          onChange={(e) => {
-            setStatus(e.target.value)
-            navigateWithFilters(search, e.target.value, payment)
+          onValueChange={(value) => {
+            setStatus(value)
+            navigateWithFilters(search, value, payment)
           }}
-          className="field-select sm:max-w-[220px]"
-          data-testid="order-status-filter"
-        >
-          <option value="">All Statuses</option>
-          <option value="PENDING">Pending</option>
-          <option value="CONFIRMED">Confirmed</option>
-          <option value="IN_PROGRESS">In Progress</option>
-          <option value="READY">Ready</option>
-          <option value="SHIPPED">Shipped</option>
-          <option value="DELIVERED">Delivered</option>
-          <option value="CANCELLED">Cancelled</option>
-        </select>
-        <select
+          placeholder="All Statuses"
+          emptyLabel="All Statuses"
+          options={[
+            { value: 'PENDING', label: 'Pending' },
+            { value: 'CONFIRMED', label: 'Confirmed' },
+            { value: 'IN_PROGRESS', label: 'In Progress' },
+            { value: 'READY', label: 'Ready' },
+            { value: 'SHIPPED', label: 'Shipped' },
+            { value: 'DELIVERED', label: 'Delivered' },
+            { value: 'CANCELLED', label: 'Cancelled' },
+          ]}
+          className="sm:max-w-[220px]"
+          dataTestId="order-status-filter"
+        />
+        <SelectField
           value={payment}
-          onChange={(e) => {
-            setPayment(e.target.value)
-            navigateWithFilters(search, status, e.target.value)
+          onValueChange={(value) => {
+            setPayment(value)
+            navigateWithFilters(search, status, value)
           }}
-          className="field-select sm:max-w-[220px]"
-          data-testid="order-payment-filter"
-        >
-          <option value="">All Payments</option>
-          <option value="UNPAID">Unpaid</option>
-          <option value="PARTIALLY_PAID">Partially Paid</option>
-          <option value="PAID">Paid</option>
-          <option value="REFUNDED">Refunded</option>
-        </select>
+          placeholder="All Payments"
+          emptyLabel="All Payments"
+          options={[
+            { value: 'UNPAID', label: 'Unpaid' },
+            { value: 'PARTIALLY_PAID', label: 'Partially Paid' },
+            { value: 'PAID', label: 'Paid' },
+            { value: 'REFUNDED', label: 'Refunded' },
+          ]}
+          className="sm:max-w-[220px]"
+          dataTestId="order-payment-filter"
+        />
       </div>
       </div>
 
@@ -174,46 +180,34 @@ export function OrderList({
             <p className="mt-1 text-sm text-muted-foreground">Try adjusting your filters or create a new order.</p>
           </div>
         </Card>
-      ) : (
+        ) : (
         <div className="data-table">
           <div className="overflow-x-auto">
-            <table>
-              <thead>
-                <tr>
-                  <th>
-                    Order
-                  </th>
-                  <th>
-                    Customer
-                  </th>
-                  <th>
-                    Date
-                  </th>
-                  <th>
-                    Amount
-                  </th>
-                  <th>
-                    Status
-                  </th>
-                  <th className="text-center">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
+            <Table>
+              <TableHeader className="bg-[hsl(var(--surface-soft))]">
+                <TableRow>
+                  <TableHead>Order</TableHead>
+                  <TableHead>Customer</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-center">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {orders.map((order) => (
-                  <tr key={order.id} data-testid={`order-row-${order.id}`}>
-                    <td>
+                  <TableRow key={order.id} data-testid={`order-row-${order.id}`}>
+                    <TableCell>
                       <p className="font-medium text-foreground">{order.orderNumber}</p>
                       <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{order._count.items} item(s)</p>
-                    </td>
-                    <td className="text-sm text-foreground">
+                    </TableCell>
+                    <TableCell className="text-sm text-foreground">
                       {order.customer.name}
-                    </td>
-                    <td className="text-sm text-muted-foreground">
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
                       {formatDate(order.orderDate)}
-                    </td>
-                    <td>
+                    </TableCell>
+                    <TableCell>
                       <div className="text-sm">
                         <p className="font-semibold text-foreground">{formatCurrency(order.totalAmount)}</p>
                         <p className="text-xs text-muted-foreground">Paid: {formatCurrency(order.paidAmount)}</p>
@@ -221,8 +215,8 @@ export function OrderList({
                           <p className="text-xs text-destructive">Due: {formatCurrency(order.pendingAmount)}</p>
                         )}
                       </div>
-                    </td>
-                    <td>
+                    </TableCell>
+                    <TableCell>
                       <div className="flex flex-col gap-1">
                         <Badge className={statusColors[order.orderStatus]}>
                           {order.orderStatus.replace('_', ' ')}
@@ -231,8 +225,8 @@ export function OrderList({
                           {order.paymentStatus.replace('_', ' ')}
                         </Badge>
                       </div>
-                    </td>
-                    <td>
+                    </TableCell>
+                    <TableCell>
                       <div className="flex items-center justify-center gap-1">
                         <Link href={`/orders/${order.id}`}>
                           <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground" data-testid={`view-order-${order.id}`}>
@@ -252,14 +246,14 @@ export function OrderList({
                           disabled={deletingId === order.id}
                           data-testid={`delete-order-${order.id}`}
                         >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         </div>
       )}

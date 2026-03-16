@@ -20,7 +20,7 @@ export default async function NewPurchasePage() {
 
       <div>
         <h1 className="page-title">Create New Purchase</h1>
-        <p className="page-copy">Record raw material purchases and update stock levels</p>
+        <p className="page-copy">Record raw material purchases and supplier spending</p>
       </div>
 
       <PurchaseForm suppliers={suppliers} materials={materials} orders={orders} />

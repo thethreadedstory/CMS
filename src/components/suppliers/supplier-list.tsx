@@ -10,6 +10,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 interface Supplier {
   id: string
@@ -106,29 +107,29 @@ export function SupplierList({ suppliers, initialSearch }: SupplierListProps) {
         ) : (
           <div className="data-table">
             <div className="overflow-x-auto">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Supplier</th>
-                    <th>Contact</th>
-                    <th>Address</th>
-                    <th>Materials</th>
-                    <th>Purchases</th>
-                    <th className="text-center">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
+              <Table>
+                <TableHeader className="bg-[hsl(var(--surface-soft))]">
+                  <TableRow>
+                    <TableHead>Supplier</TableHead>
+                    <TableHead>Contact</TableHead>
+                    <TableHead>Address</TableHead>
+                    <TableHead>Materials</TableHead>
+                    <TableHead>Purchases</TableHead>
+                    <TableHead className="text-center">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {suppliers.map((supplier) => (
-                    <tr key={supplier.id} data-testid={`supplier-row-${supplier.id}`}>
-                      <td>
+                    <TableRow key={supplier.id} data-testid={`supplier-row-${supplier.id}`}>
+                      <TableCell>
                         <div>
                           <p className="font-medium text-foreground">{supplier.name}</p>
                           {supplier.contactPerson && (
                             <p className="text-sm text-muted-foreground">{supplier.contactPerson}</p>
                           )}
                         </div>
-                      </td>
-                      <td>
+                      </TableCell>
+                      <TableCell>
                         <div className="text-sm">
                           {supplier.phone && <p className="text-foreground">{supplier.phone}</p>}
                           {supplier.email && <p className="text-muted-foreground">{supplier.email}</p>}
@@ -136,17 +137,17 @@ export function SupplierList({ suppliers, initialSearch }: SupplierListProps) {
                             <p className="text-muted-foreground">-</p>
                           )}
                         </div>
-                      </td>
-                      <td className="text-sm text-muted-foreground">
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
                         {supplier.address || '-'}
-                      </td>
-                      <td className="text-sm font-medium text-foreground">
+                      </TableCell>
+                      <TableCell className="text-sm font-medium text-foreground">
                         {supplier._count.materials}
-                      </td>
-                      <td className="text-sm font-medium text-foreground">
+                      </TableCell>
+                      <TableCell className="text-sm font-medium text-foreground">
                         {supplier._count.purchases}
-                      </td>
-                      <td>
+                      </TableCell>
+                      <TableCell>
                         <div className="flex items-center justify-center gap-1">
                           <Link href={`/suppliers/${supplier.id}`}>
                             <Button
@@ -179,11 +180,11 @@ export function SupplierList({ suppliers, initialSearch }: SupplierListProps) {
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
           </div>
         )}

@@ -227,7 +227,6 @@ export const getPurchaseFormData = unstable_cache(
           id: true,
           name: true,
           unit: true,
-          currentStock: true,
           costPerUnit: true,
         },
         orderBy: { name: 'asc' },

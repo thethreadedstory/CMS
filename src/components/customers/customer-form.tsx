@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
+import { Textarea } from '@/components/ui/textarea'
 import { createCustomer, updateCustomer } from '@/app/actions/customers'
 import { Loader2 } from 'lucide-react'
 
@@ -122,13 +123,12 @@ export function CustomerForm({ customer }: CustomerFormProps) {
 
           <div className="space-y-2">
             <Label htmlFor="notes">Notes</Label>
-            <textarea
+            <Textarea
               id="notes"
               name="notes"
               rows={4}
               defaultValue={customer?.notes || ''}
               placeholder="Add any additional notes..."
-              className="field-textarea"
               data-testid="customer-notes-input"
             />
           </div>

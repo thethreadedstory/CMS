@@ -2,6 +2,7 @@
 
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { formatCurrency, formatDate } from '@/lib/utils'
 
 interface Payment {
@@ -42,50 +43,40 @@ export function PaymentList({ payments }: PaymentListProps) {
         </Card>
       ) : (
         <div className="data-table">
-          <table>
-            <thead>
-              <tr>
-                <th>
-                  Date
-                </th>
-                <th>
-                  Customer
-                </th>
-                <th>
-                  Order
-                </th>
-                <th>
-                  Amount
-                </th>
-                <th>
-                  Method
-                </th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHeader className="bg-[hsl(var(--surface-soft))]">
+              <TableRow>
+                <TableHead>Date</TableHead>
+                <TableHead>Customer</TableHead>
+                <TableHead>Order</TableHead>
+                <TableHead>Amount</TableHead>
+                <TableHead>Method</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {payments.map((payment) => (
-                <tr key={payment.id}>
-                  <td className="text-sm text-foreground">
+                <TableRow key={payment.id}>
+                  <TableCell className="text-sm text-foreground">
                     {formatDate(payment.paymentDate)}
-                  </td>
-                  <td className="text-sm font-medium text-foreground">
+                  </TableCell>
+                  <TableCell className="text-sm font-medium text-foreground">
                     {payment.customer.name}
-                  </td>
-                  <td className="text-sm text-muted-foreground">
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
                     {payment.order?.orderNumber || '-'}
-                  </td>
-                  <td className="text-sm font-semibold text-foreground">
+                  </TableCell>
+                  <TableCell className="text-sm font-semibold text-foreground">
                     {formatCurrency(payment.amount)}
-                  </td>
-                  <td className="text-sm">
+                  </TableCell>
+                  <TableCell className="text-sm">
                     <Badge className={methodColors[payment.paymentMethod]}>
                       {payment.paymentMethod.replace('_', ' ')}
                     </Badge>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       )}
     </div>

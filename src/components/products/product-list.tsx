@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { SelectField } from '@/components/ui/select-field'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -107,22 +109,21 @@ export function ProductList({
               data-testid="product-search-input"
             />
           </div>
-          <select
+          <SelectField
             value={category}
-            onChange={(e) => {
-              setCategory(e.target.value)
-              navigateWithFilters(search, e.target.value)
+            onValueChange={(value) => {
+              setCategory(value)
+              navigateWithFilters(search, value)
             }}
-            className="field-select sm:max-w-[220px]"
-            data-testid="product-category-filter"
-          >
-            <option value="">All Categories</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
+            placeholder="All Categories"
+            emptyLabel="All Categories"
+            options={categories.map((cat) => ({
+              value: cat.id,
+              label: cat.name,
+            }))}
+            className="sm:max-w-[220px]"
+            dataTestId="product-category-filter"
+          />
         </div>
         </div>
 
@@ -136,38 +137,26 @@ export function ProductList({
         ) : (
           <div className="data-table">
             <div className="overflow-x-auto">
-              <table>
-                <thead>
-                  <tr>
-                    <th>
-                      Product
-                    </th>
-                    <th>
-                      Category
-                    </th>
-                    <th>
-                      Price
-                    </th>
-                    <th>
-                      Stock
-                    </th>
-                    <th>
-                      Status
-                    </th>
-                    <th className="text-center">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
+              <Table>
+                <TableHeader className="bg-[hsl(var(--surface-soft))]">
+                  <TableRow>
+                    <TableHead>Product</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Price</TableHead>
+                    <TableHead>Stock</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-center">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {products.map((product) => {
                     const isLowStock = product.currentStock <= product.lowStockAlert
                     const profit = product.sellingPrice - product.costPrice
                     const profitMargin = ((profit / product.sellingPrice) * 100).toFixed(1)
 
                     return (
-                      <tr key={product.id} data-testid={`product-row-${product.id}`}>
-                        <td>
+                      <TableRow key={product.id} data-testid={`product-row-${product.id}`}>
+                        <TableCell>
                           <div>
                             <p className="font-medium text-foreground">{product.name}</p>
                             <p className="text-sm text-muted-foreground">SKU: {product.sku}</p>
@@ -175,31 +164,31 @@ export function ProductList({
                               <p className="mt-1 text-xs uppercase tracking-[0.18em] text-muted-foreground">{product._count.variants} variant(s)</p>
                             )}
                           </div>
-                        </td>
-                        <td className="text-sm text-muted-foreground">
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
                           {product.category?.name || '-'}
-                        </td>
-                        <td>
+                        </TableCell>
+                        <TableCell>
                           <div className="text-sm">
                             <p className="font-semibold text-foreground">{formatCurrency(product.sellingPrice)}</p>
                             <p className="text-muted-foreground">Cost: {formatCurrency(product.costPrice)}</p>
                             <p className="text-xs text-emerald-700">Margin: {profitMargin}%</p>
                           </div>
-                        </td>
-                        <td>
+                        </TableCell>
+                        <TableCell>
                           <div className="flex items-center gap-2">
                             <span className={`font-medium ${isLowStock ? 'text-destructive' : 'text-foreground'}`}>
                               {product.currentStock}
                             </span>
                             {isLowStock && <AlertCircle className="h-4 w-4 text-destructive" />}
                           </div>
-                        </td>
-                        <td>
+                        </TableCell>
+                        <TableCell>
                           <Badge variant={product.isActive ? 'default' : 'secondary'}>
                             {product.isActive ? 'Active' : 'Inactive'}
                           </Badge>
-                        </td>
-                        <td>
+                        </TableCell>
+                        <TableCell>
                           <div className="flex items-center justify-center gap-1">
                             <Link href={`/products/${product.id}`}>
                               <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground" data-testid={`view-product-${product.id}`}>
@@ -219,15 +208,15 @@ export function ProductList({
                               disabled={deletingId === product.id}
                               data-testid={`delete-product-${product.id}`}
                             >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                        </TableCell>
+                      </TableRow>
                     )
                   })}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
           </div>
         )}

@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { SelectField } from '@/components/ui/select-field'
+import { Textarea } from '@/components/ui/textarea'
 import { updateOrder } from '@/app/actions/orders'
 import { Plus, Trash2, Calculator, Loader2 } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
@@ -226,20 +228,18 @@ export function EditOrderForm({ orderId, customers, products, initialData }: Edi
               <Label htmlFor="customerId">
                 Customer <span className="text-red-500">*</span>
               </Label>
-              <select
+              <SelectField
                 id="customerId"
                 value={customerId}
-                onChange={(e) => setCustomerId(e.target.value)}
+                onValueChange={setCustomerId}
+                placeholder="Select a customer"
+                emptyLabel="Select a customer"
+                options={customers.map((customer) => ({
+                  value: customer.id,
+                  label: `${customer.name}${customer.phone ? ` - ${customer.phone}` : ''}`,
+                }))}
                 required
-                className="field-select"
-              >
-                <option value="">Select a customer</option>
-                {customers.map((customer) => (
-                  <option key={customer.id} value={customer.id}>
-                    {customer.name} {customer.phone ? `- ${customer.phone}` : ''}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
 
             <div className="space-y-2">
@@ -275,6 +275,7 @@ export function EditOrderForm({ orderId, customers, products, initialData }: Edi
               {items.map((item, index) => {
                 const product = products.find((p) => p.id === item.productId)
                 const hasVariants = (product?.variants.length ?? 0) > 0
+                const isSimpleProduct = Boolean(product) && !hasVariants
                 const availableStock = getAvailableStock(item)
                 const itemTotal = item.quantity * item.unitPrice
 
@@ -296,25 +297,28 @@ export function EditOrderForm({ orderId, customers, products, initialData }: Edi
                       </Button>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+                    <div className={`grid grid-cols-1 gap-4 ${isSimpleProduct ? 'md:grid-cols-5 md:items-start' : 'md:grid-cols-4'}`}>
                       <div className="md:col-span-2">
                         <Label>Product</Label>
-                        <select
+                        <SelectField
                           value={item.productId}
-                          onChange={(e) => updateItem(index, 'productId', e.target.value)}
-                          className="field-select"
+                          onValueChange={(value) => updateItem(index, 'productId', value)}
+                          placeholder="Select product"
+                          options={products.map((p) => ({
+                            value: p.id,
+                            label:
+                              p.variants.length > 0
+                                ? `${p.name} - ${p.variants.length} variant${p.variants.length > 1 ? 's' : ''}`
+                                : `${p.name} - ${formatCurrency(p.sellingPrice)} (Stock: ${p.currentStock})`,
+                          }))}
                           required
-                        >
-                          <option value="">Select product</option>
-                          {products.map((p) => (
-                            <option key={p.id} value={p.id}>
-                              {p.name}
-                              {p.variants.length > 0
-                                ? ` — ${p.variants.length} variant${p.variants.length > 1 ? 's' : ''}`
-                                : ` — ${formatCurrency(p.sellingPrice)} (Stock: ${p.currentStock})`}
-                            </option>
-                          ))}
-                        </select>
+                        />
+                        {isSimpleProduct && (
+                          <p className={`mt-2 text-xs ${availableStock < item.quantity ? 'text-destructive' : 'text-muted-foreground'}`}>
+                            Stock: {availableStock}
+                            {availableStock < item.quantity ? ' • Insufficient stock!' : ''}
+                          </p>
+                        )}
                       </div>
 
                       {hasVariants && (
@@ -322,73 +326,105 @@ export function EditOrderForm({ orderId, customers, products, initialData }: Edi
                           <Label>
                             Variant <span className="text-red-500">*</span>
                           </Label>
-                          <select
+                          <SelectField
                             value={item.variantId}
-                            onChange={(e) => updateItem(index, 'variantId', e.target.value)}
-                            className="field-select"
+                            onValueChange={(value) => updateItem(index, 'variantId', value)}
+                            placeholder="Select variant"
+                            options={
+                              product?.variants.map((v) => ({
+                                value: v.id,
+                                label: `${v.variantType}: ${v.variantValue} - ${formatCurrency(v.price)} (Stock: ${v.stock})`,
+                              })) ?? []
+                            }
                             required
-                          >
-                            <option value="">Select variant</option>
-                            {product?.variants.map((v) => (
-                              <option key={v.id} value={v.id}>
-                                {v.variantType}: {v.variantValue} — {formatCurrency(v.price)} (Stock:{' '}
-                                {v.stock})
-                              </option>
-                            ))}
-                          </select>
+                          />
                           {item.variantId && availableStock < item.quantity && (
                             <p className="mt-1 text-xs text-destructive">Insufficient variant stock!</p>
                           )}
                         </div>
                       )}
 
-                      {!hasVariants && product && availableStock < item.quantity && (
-                        <div className="md:col-span-2 flex items-end">
-                          <p className="text-xs text-destructive pb-1">Insufficient stock!</p>
-                        </div>
+                      {isSimpleProduct && (
+                        <>
+                          <div>
+                            <Label>Variant</Label>
+                            <div className="flex h-12 items-center rounded-[1rem] border border-border/75 bg-background/80 px-4 text-sm text-muted-foreground">
+                              No variant
+                            </div>
+                          </div>
+
+                          <div>
+                            <Label>Quantity</Label>
+                            <Input
+                              type="number"
+                              min="1"
+                              value={item.quantity}
+                              onChange={(e) =>
+                                updateItem(index, 'quantity', parseInt(e.target.value) || 1)
+                              }
+                              required
+                            />
+                          </div>
+
+                          <div>
+                            <Label>Unit Price</Label>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              value={item.unitPrice}
+                              onChange={(e) =>
+                                updateItem(index, 'unitPrice', parseFloat(e.target.value) || 0)
+                              }
+                              required
+                            />
+                          </div>
+                        </>
                       )}
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {product && (
-                        <div className="col-span-2 flex items-center gap-2">
-                          <span className="text-xs text-muted-foreground">
-                            {hasVariants && item.variantId
-                              ? `Variant stock: ${availableStock}`
-                              : !hasVariants
-                              ? `Stock: ${availableStock}`
-                              : null}
-                          </span>
+                    {!isSimpleProduct && (
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {product && (
+                          <div className="col-span-2 flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">
+                              {hasVariants && item.variantId
+                                ? `Variant stock: ${availableStock}`
+                                : !hasVariants
+                                ? `Stock: ${availableStock}`
+                                : null}
+                            </span>
+                          </div>
+                        )}
+
+                        <div>
+                          <Label>Quantity</Label>
+                          <Input
+                            type="number"
+                            min="1"
+                            value={item.quantity}
+                            onChange={(e) =>
+                              updateItem(index, 'quantity', parseInt(e.target.value) || 1)
+                            }
+                            required
+                          />
                         </div>
-                      )}
 
-                      <div>
-                        <Label>Quantity</Label>
-                        <Input
-                          type="number"
-                          min="1"
-                          value={item.quantity}
-                          onChange={(e) =>
-                            updateItem(index, 'quantity', parseInt(e.target.value) || 1)
-                          }
-                          required
-                        />
+                        <div>
+                          <Label>Unit Price</Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={item.unitPrice}
+                            onChange={(e) =>
+                              updateItem(index, 'unitPrice', parseFloat(e.target.value) || 0)
+                            }
+                            required
+                          />
+                        </div>
                       </div>
-
-                      <div>
-                        <Label>Unit Price</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          value={item.unitPrice}
-                          onChange={(e) =>
-                            updateItem(index, 'unitPrice', parseFloat(e.target.value) || 0)
-                          }
-                          required
-                        />
-                      </div>
-                    </div>
+                    )}
 
                     <div className="flex items-center justify-between border-t border-border/70 pt-2">
                       <span className="text-sm text-muted-foreground">Item Total:</span>
@@ -496,13 +532,12 @@ export function EditOrderForm({ orderId, customers, products, initialData }: Edi
 
           <div className="space-y-2">
             <Label htmlFor="notes">Notes</Label>
-            <textarea
+            <Textarea
               id="notes"
               rows={3}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Add any notes about this order..."
-              className="field-textarea"
             />
           </div>
         </CardContent>

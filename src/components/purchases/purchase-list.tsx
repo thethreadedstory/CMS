@@ -10,6 +10,7 @@ import { Eye, Edit, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { deletePurchase } from '@/app/actions/purchases'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { toast } from 'sonner'
 
 interface Purchase {
@@ -92,28 +93,28 @@ export function PurchaseList({ purchases }: PurchaseListProps) {
         ) : (
           <div className="data-table">
             <div className="overflow-x-auto">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Purchase</th>
-                    <th>Order</th>
-                    <th>Supplier</th>
-                    <th>Date</th>
-                    <th>Amount</th>
-                    <th>Status</th>
-                    <th className="text-center">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
+              <Table>
+                <TableHeader className="bg-[hsl(var(--surface-soft))]">
+                  <TableRow>
+                    <TableHead>Purchase</TableHead>
+                    <TableHead>Order</TableHead>
+                    <TableHead>Supplier</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-center">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {purchases.map((purchase) => (
-                    <tr key={purchase.id} data-testid={`purchase-row-${purchase.id}`}>
-                      <td>
+                    <TableRow key={purchase.id} data-testid={`purchase-row-${purchase.id}`}>
+                      <TableCell>
                         <p className="font-medium text-foreground">{purchase.purchaseNumber}</p>
                         <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                           {purchase._count.items} item(s)
                         </p>
-                      </td>
-                      <td className="text-sm text-foreground">
+                      </TableCell>
+                      <TableCell className="text-sm text-foreground">
                         {purchase.order ? (
                           <Link
                             href={`/orders/${purchase.order.id}`}
@@ -124,22 +125,22 @@ export function PurchaseList({ purchases }: PurchaseListProps) {
                         ) : (
                           'N/A'
                         )}
-                      </td>
-                      <td className="text-sm text-foreground">
+                      </TableCell>
+                      <TableCell className="text-sm text-foreground">
                         {purchase.supplier?.name || 'N/A'}
-                      </td>
-                      <td className="text-sm text-muted-foreground">
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
                         {formatDate(purchase.purchaseDate)}
-                      </td>
-                      <td className="text-sm font-semibold text-foreground">
+                      </TableCell>
+                      <TableCell className="text-sm font-semibold text-foreground">
                         {formatCurrency(purchase.totalAmount)}
-                      </td>
-                      <td>
+                      </TableCell>
+                      <TableCell>
                         <Badge className={statusColors[purchase.paymentStatus]}>
                           {purchase.paymentStatus.replace('_', ' ')}
                         </Badge>
-                      </td>
-                      <td>
+                      </TableCell>
+                      <TableCell>
                         <div className="flex items-center justify-center gap-1">
                           <Link href={`/purchases/${purchase.id}`}>
                             <Button
@@ -171,14 +172,14 @@ export function PurchaseList({ purchases }: PurchaseListProps) {
                             disabled={deletingId === purchase.id}
                             data-testid={`delete-purchase-${purchase.id}`}
                           >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
           </div>
         )}

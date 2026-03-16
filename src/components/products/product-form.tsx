@@ -6,7 +6,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { SelectField } from '@/components/ui/select-field'
+import { Textarea } from '@/components/ui/textarea'
 import { createProduct, updateProduct } from '@/app/actions/products'
+import { generateSkuFromName } from '@/lib/utils'
 import { Plus, Trash2, Loader2 } from 'lucide-react'
 
 interface ProductVariant {
@@ -42,7 +45,11 @@ export function ProductForm({ product, categories }: ProductFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [name, setName] = useState(product?.name ?? '')
+  const [categoryId, setCategoryId] = useState(product?.categoryId ?? '')
+  const [isActive, setIsActive] = useState(product?.isActive !== false ? 'true' : 'false')
   const [variants, setVariants] = useState<ProductVariant[]>(product?.variants || [])
+  const sku = generateSkuFromName(name)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -110,7 +117,8 @@ export function ProductForm({ product, categories }: ProductFormProps) {
                 id="name"
                 name="name"
                 required
-                defaultValue={product?.name || ''}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 placeholder="Enter product name"
                 data-testid="product-name-input"
               />
@@ -124,54 +132,55 @@ export function ProductForm({ product, categories }: ProductFormProps) {
                 id="sku"
                 name="sku"
                 required
-                defaultValue={product?.sku || ''}
-                placeholder="Enter SKU"
+                value={sku}
+                disabled
+                placeholder="SKU will be generated automatically"
                 data-testid="product-sku-input"
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="categoryId">Category</Label>
-              <select
+              <SelectField
                 id="categoryId"
                 name="categoryId"
-                defaultValue={product?.categoryId || ''}
-                className="field-select"
-                data-testid="product-category-select"
-              >
-                <option value="">Select a category</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
+                value={categoryId}
+                onValueChange={setCategoryId}
+                placeholder="Select a category"
+                emptyLabel="Select a category"
+                options={categories.map((category) => ({
+                  value: category.id,
+                  label: category.name,
+                }))}
+                dataTestId="product-category-select"
+              />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="isActive">Status</Label>
-              <select
+              <SelectField
                 id="isActive"
                 name="isActive"
-                defaultValue={product?.isActive !== false ? 'true' : 'false'}
-                className="field-select"
-                data-testid="product-status-select"
-              >
-                <option value="true">Active</option>
-                <option value="false">Inactive</option>
-              </select>
+                value={isActive}
+                onValueChange={setIsActive}
+                placeholder="Select status"
+                options={[
+                  { value: 'true', label: 'Active' },
+                  { value: 'false', label: 'Inactive' },
+                ]}
+                dataTestId="product-status-select"
+              />
             </div>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
-            <textarea
+            <Textarea
               id="description"
               name="description"
               rows={3}
               defaultValue={product?.description || ''}
               placeholder="Enter product description..."
-              className="field-textarea"
               data-testid="product-description-input"
             />
           </div>
@@ -249,13 +258,12 @@ export function ProductForm({ product, categories }: ProductFormProps) {
 
           <div className="space-y-2">
             <Label htmlFor="notes">Notes</Label>
-            <textarea
+            <Textarea
               id="notes"
               name="notes"
               rows={3}
               defaultValue={product?.notes || ''}
               placeholder="Add any additional notes..."
-              className="field-textarea"
               data-testid="product-notes-input"
             />
           </div>

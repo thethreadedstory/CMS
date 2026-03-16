@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { SelectField } from '@/components/ui/select-field'
+import { Textarea } from '@/components/ui/textarea'
 import { createPayment } from '@/app/actions/payments'
 import { formatCurrency } from '@/lib/utils'
 
@@ -39,6 +41,7 @@ export function PaymentForm({
   const [error, setError] = useState('')
   const [customerId, setCustomerId] = useState(initialCustomerId)
   const [orderId, setOrderId] = useState(initialOrderId)
+  const [paymentMethod, setPaymentMethod] = useState('CASH')
   const [paymentDate, setPaymentDate] = useState(
     new Date().toISOString().split('T')[0]
   )
@@ -79,6 +82,12 @@ export function PaymentForm({
     setLoading(true)
     setError('')
 
+    if (!customerId && !orderId) {
+      setError('Please select a customer')
+      setLoading(false)
+      return
+    }
+
     try {
       const formData = new FormData(event.currentTarget)
       await createPayment(formData)
@@ -107,41 +116,37 @@ export function PaymentForm({
               <Label htmlFor="customerId">
                 Customer <span className="text-red-500">*</span>
               </Label>
-              <select
+              <SelectField
                 id="customerId"
                 name="customerId"
                 value={customerId}
-                onChange={(event) => handleCustomerChange(event.target.value)}
-                className="field-select"
+                onValueChange={handleCustomerChange}
+                placeholder="Select a customer"
+                emptyLabel="Select a customer"
+                options={customers.map((customer) => ({
+                  value: customer.id,
+                  label: customer.name,
+                }))}
                 required
-                data-testid="payment-customer-select"
-              >
-                <option value="">Select a customer</option>
-                {customers.map((customer) => (
-                  <option key={customer.id} value={customer.id}>
-                    {customer.name}
-                  </option>
-                ))}
-              </select>
+                dataTestId="payment-customer-select"
+              />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="orderId">Order</Label>
-              <select
+              <SelectField
                 id="orderId"
                 name="orderId"
                 value={orderId}
-                onChange={(event) => handleOrderChange(event.target.value)}
-                className="field-select"
-                data-testid="payment-order-select"
-              >
-                <option value="">General customer payment</option>
-                {availableOrders.map((order) => (
-                  <option key={order.id} value={order.id}>
-                    {order.orderNumber} - Pending {formatCurrency(order.pendingAmount)}
-                  </option>
-                ))}
-              </select>
+                onValueChange={handleOrderChange}
+                placeholder="General customer payment"
+                emptyLabel="General customer payment"
+                options={availableOrders.map((order) => ({
+                  value: order.id,
+                  label: `${order.orderNumber} - Pending ${formatCurrency(order.pendingAmount)}`,
+                }))}
+                dataTestId="payment-order-select"
+              />
             </div>
 
             <div className="space-y-2">
@@ -185,30 +190,31 @@ export function PaymentForm({
               <Label htmlFor="paymentMethod">
                 Payment Method <span className="text-red-500">*</span>
               </Label>
-              <select
+              <SelectField
                 id="paymentMethod"
                 name="paymentMethod"
-                className="field-select"
-                defaultValue="CASH"
+                value={paymentMethod}
+                onValueChange={setPaymentMethod}
+                placeholder="Select payment method"
+                options={[
+                  { value: 'CASH', label: 'Cash' },
+                  { value: 'UPI', label: 'UPI' },
+                  { value: 'BANK_TRANSFER', label: 'Bank Transfer' },
+                  { value: 'CARD', label: 'Card' },
+                ]}
                 required
-                data-testid="payment-method-select"
-              >
-                <option value="CASH">Cash</option>
-                <option value="UPI">UPI</option>
-                <option value="BANK_TRANSFER">Bank Transfer</option>
-                <option value="CARD">Card</option>
-              </select>
+                dataTestId="payment-method-select"
+              />
             </div>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="notes">Notes</Label>
-            <textarea
+            <Textarea
               id="notes"
               name="notes"
               rows={4}
               placeholder="Add optional payment notes..."
-              className="field-textarea"
               data-testid="payment-notes-input"
             />
           </div>

@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { SelectField } from '@/components/ui/select-field'
+import { Textarea } from '@/components/ui/textarea'
 import { formatCurrency } from '@/lib/utils'
 
 interface PurchaseFormSupplier {
@@ -20,7 +22,6 @@ interface PurchaseFormMaterial {
   name: string
   unit: string
   costPerUnit: number
-  currentStock: number
 }
 
 interface PurchaseFormOrder {
@@ -199,20 +200,18 @@ export function PurchaseForm({
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="orderId">Purchase for Which Order</Label>
-              <select
+              <SelectField
                 id="orderId"
                 value={orderId}
-                onChange={(event) => setOrderId(event.target.value)}
-                className="field-select"
-                data-testid="purchase-order-select"
-              >
-                <option value="">Not linked to any order</option>
-                {orders.map((order) => (
-                  <option key={order.id} value={order.id}>
-                    {order.orderNumber} - {order.customerName} - {formatCurrency(order.totalAmount)}
-                  </option>
-                ))}
-              </select>
+                onValueChange={setOrderId}
+                placeholder="Not linked to any order"
+                emptyLabel="Not linked to any order"
+                options={orders.map((order) => ({
+                  value: order.id,
+                  label: `${order.orderNumber} - ${order.customerName} - ${formatCurrency(order.totalAmount)}`,
+                }))}
+                dataTestId="purchase-order-select"
+              />
               <p className="text-xs text-muted-foreground">
                 Link this purchase to an order to track raw material spend and estimated profit.
               </p>
@@ -220,20 +219,18 @@ export function PurchaseForm({
 
             <div className="space-y-2">
               <Label htmlFor="supplierId">Supplier</Label>
-              <select
+              <SelectField
                 id="supplierId"
                 value={supplierId}
-                onChange={(event) => setSupplierId(event.target.value)}
-                className="field-select"
-                data-testid="purchase-supplier-select"
-              >
-                <option value="">Select a supplier</option>
-                {suppliers.map((supplier) => (
-                  <option key={supplier.id} value={supplier.id}>
-                    {supplier.name}
-                  </option>
-                ))}
-              </select>
+                onValueChange={setSupplierId}
+                placeholder="Select a supplier"
+                emptyLabel="Select a supplier"
+                options={suppliers.map((supplier) => ({
+                  value: supplier.id,
+                  label: supplier.name,
+                }))}
+                dataTestId="purchase-supplier-select"
+              />
             </div>
 
             <div className="space-y-2">
@@ -255,18 +252,19 @@ export function PurchaseForm({
               <Label htmlFor="paymentStatus">
                 Payment Status <span className="text-red-500">*</span>
               </Label>
-              <select
+              <SelectField
                 id="paymentStatus"
                 value={paymentStatus}
-                onChange={(event) => setPaymentStatus(event.target.value)}
-                className="field-select"
+                onValueChange={setPaymentStatus}
+                placeholder="Select payment status"
+                options={[
+                  { value: 'UNPAID', label: 'Unpaid' },
+                  { value: 'PARTIALLY_PAID', label: 'Partially Paid' },
+                  { value: 'PAID', label: 'Paid' },
+                ]}
                 required
-                data-testid="purchase-payment-status-select"
-              >
-                <option value="UNPAID">Unpaid</option>
-                <option value="PARTIALLY_PAID">Partially Paid</option>
-                <option value="PAID">Paid</option>
-              </select>
+                dataTestId="purchase-payment-status-select"
+              />
             </div>
           </div>
 
@@ -333,7 +331,6 @@ export function PurchaseForm({
           ) : (
             <div className="space-y-4">
               {items.map((item, index) => {
-                const material = materials.find((entry) => entry.id === item.materialId)
                 const itemTotal = item.quantity * item.costPerUnit
 
                 return (
@@ -357,21 +354,16 @@ export function PurchaseForm({
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                       <div className="md:col-span-3 space-y-2">
                         <Label>Material</Label>
-                        <select
+                        <SelectField
                           value={item.materialId}
-                          onChange={(event) =>
-                            updateItem(index, 'materialId', event.target.value)
-                          }
-                          className="field-select"
+                          onValueChange={(value) => updateItem(index, 'materialId', value)}
+                          placeholder="Select material"
+                          options={materials.map((entry) => ({
+                            value: entry.id,
+                            label: `${entry.name} (${entry.unit})`,
+                          }))}
                           required
-                        >
-                          <option value="">Select material</option>
-                          {materials.map((entry) => (
-                            <option key={entry.id} value={entry.id}>
-                              {entry.name} - {entry.currentStock} {entry.unit} in stock
-                            </option>
-                          ))}
-                        </select>
+                        />
                       </div>
 
                       <div className="space-y-2">
@@ -409,12 +401,6 @@ export function PurchaseForm({
                         </div>
                       </div>
                     </div>
-
-                    {material && (
-                      <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                        Current stock: {material.currentStock} {material.unit}
-                      </p>
-                    )}
                   </div>
                 )
               })}
@@ -430,11 +416,10 @@ export function PurchaseForm({
         <CardContent className="pt-0 space-y-6">
           <div className="space-y-2">
             <Label htmlFor="notes">Notes</Label>
-            <textarea
+            <Textarea
               id="notes"
               rows={4}
               placeholder="Add invoice, transport, or payment notes..."
-              className="field-textarea"
               value={notes}
               onChange={(event) => setNotes(event.target.value)}
               data-testid="purchase-notes-input"

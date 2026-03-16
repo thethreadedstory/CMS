@@ -10,6 +10,7 @@ import { Search, Eye, Edit, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { deleteCustomer } from '@/app/actions/customers'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { toast } from 'sonner'
 
 interface Customer {
@@ -105,56 +106,44 @@ export function CustomerList({ customers, initialSearch }: CustomerListProps) {
         ) : (
           <div className="data-table">
             <div className="overflow-x-auto">
-              <table>
-                <thead>
-                  <tr>
-                    <th>
-                      Customer
-                    </th>
-                    <th>
-                      Contact
-                    </th>
-                    <th>
-                      Orders
-                    </th>
-                    <th>
-                      Total Spent
-                    </th>
-                    <th>
-                      Pending
-                    </th>
-                    <th className="text-center">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
+              <Table>
+                <TableHeader className="bg-[hsl(var(--surface-soft))]">
+                  <TableRow>
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Contact</TableHead>
+                    <TableHead>Orders</TableHead>
+                    <TableHead>Total Spent</TableHead>
+                    <TableHead>Pending</TableHead>
+                    <TableHead className="text-center">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {customers.map((customer) => (
-                    <tr key={customer.id} data-testid={`customer-row-${customer.id}`}>
-                      <td>
+                    <TableRow key={customer.id} data-testid={`customer-row-${customer.id}`}>
+                      <TableCell>
                         <div>
                           <p className="font-medium text-foreground">{customer.name}</p>
                           {customer.city && <p className="text-sm text-muted-foreground">{customer.city}</p>}
                         </div>
-                      </td>
-                      <td>
+                      </TableCell>
+                      <TableCell>
                         <div className="text-sm">
                           {customer.phone && <p className="text-foreground">{customer.phone}</p>}
                           {customer.email && <p className="text-muted-foreground">{customer.email}</p>}
                         </div>
-                      </td>
-                      <td className="text-sm text-foreground">
+                      </TableCell>
+                      <TableCell className="text-sm text-foreground">
                         {customer.orderCount}
-                      </td>
-                      <td className="text-sm font-medium text-foreground">
+                      </TableCell>
+                      <TableCell className="text-sm font-medium text-foreground">
                         {formatCurrency(customer.totalSpent)}
-                      </td>
-                      <td className="text-sm">
+                      </TableCell>
+                      <TableCell className="text-sm">
                         <span className={customer.pendingAmount > 0 ? 'font-medium text-destructive' : 'text-muted-foreground'}>
                           {formatCurrency(customer.pendingAmount)}
                         </span>
-                      </td>
-                      <td>
+                      </TableCell>
+                      <TableCell>
                         <div className="flex items-center justify-center gap-1">
                           <Link href={`/customers/${customer.id}`}>
                             <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground" data-testid={`view-customer-${customer.id}`}>
@@ -177,11 +166,11 @@ export function CustomerList({ customers, initialSearch }: CustomerListProps) {
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
           </div>
         )}

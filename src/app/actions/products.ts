@@ -1,11 +1,12 @@
 'use server'
 
 import { prisma } from '@/lib/prisma'
+import { generateSkuFromName } from '@/lib/utils'
 import { revalidatePath, revalidateTag } from 'next/cache'
 
 export async function createProduct(formData: FormData) {
   const name = formData.get('name') as string
-  const sku = formData.get('sku') as string
+  const sku = generateSkuFromName(name)
   const description = formData.get('description') as string | null
   const categoryId = formData.get('categoryId') as string | null
   const sellingPrice = parseFloat(formData.get('sellingPrice') as string)
@@ -48,7 +49,7 @@ export async function createProduct(formData: FormData) {
 
 export async function updateProduct(id: string, formData: FormData) {
   const name = formData.get('name') as string
-  const sku = formData.get('sku') as string
+  const sku = generateSkuFromName(name)
   const description = formData.get('description') as string | null
   const categoryId = formData.get('categoryId') as string | null
   const sellingPrice = parseFloat(formData.get('sellingPrice') as string)

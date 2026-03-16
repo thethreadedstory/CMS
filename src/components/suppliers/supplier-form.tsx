@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 
 interface Supplier {
   id: string
@@ -123,13 +124,12 @@ export function SupplierForm({ supplier }: SupplierFormProps) {
 
           <div className="space-y-2">
             <Label htmlFor="notes">Notes</Label>
-            <textarea
+            <Textarea
               id="notes"
               name="notes"
               rows={4}
               defaultValue={supplier?.notes || ''}
               placeholder="Add any supplier notes..."
-              className="field-textarea"
               data-testid="supplier-notes-input"
             />
           </div>

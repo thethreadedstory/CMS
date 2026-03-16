@@ -30,3 +30,7 @@ export function formatDateTime(date: Date | string): string {
     minute: '2-digit',
   }).format(new Date(date))
 }
+
+export function generateSkuFromName(name: string): string {
+  return name.trim().toLowerCase().replace(/\s+/g, '-')
+}
