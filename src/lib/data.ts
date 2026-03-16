@@ -4,15 +4,7 @@ import { prisma } from '@/lib/prisma'
 export const getDashboardData = unstable_cache(
   async () => {
     const now = new Date()
-    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-    const lastDayOfMonth = new Date(
-      now.getFullYear(),
-      now.getMonth() + 1,
-      0,
-      23,
-      59,
-      59
-    )
+    const trendStartDate = new Date(now.getFullYear(), now.getMonth() - 5, 1)
 
     const [
       totalSales,
@@ -21,22 +13,19 @@ export const getDashboardData = unstable_cache(
       totalOrders,
       totalCustomers,
       totalProducts,
-      allProducts,
-      allMaterials,
+      deliveredOrders,
       recentOrders,
       ordersByStatus,
+      salesTrendOrders,
+      purchaseTrendEntries,
     ] = await Promise.all([
       prisma.order.aggregate({
         where: {
           orderStatus: { in: ['DELIVERED'] },
-          orderDate: { gte: firstDayOfMonth, lte: lastDayOfMonth },
         },
         _sum: { totalAmount: true },
       }),
       prisma.rawMaterialPurchase.aggregate({
-        where: {
-          purchaseDate: { gte: firstDayOfMonth, lte: lastDayOfMonth },
-        },
         _sum: { totalAmount: true },
       }),
       prisma.order.aggregate({
@@ -48,36 +37,18 @@ export const getDashboardData = unstable_cache(
       prisma.order.count(),
       prisma.customer.count(),
       prisma.product.count({ where: { isActive: true } }),
-      prisma.product.findMany({
+      prisma.order.findMany({
         where: {
-          isActive: true,
-          currentStock: {
-            lte: prisma.product.fields.lowStockAlert,
-          },
+          orderStatus: 'DELIVERED',
         },
         select: {
-          id: true,
-          name: true,
-          currentStock: true,
-          lowStockAlert: true,
-        },
-        orderBy: { currentStock: 'asc' },
-        take: 5,
-      }),
-      prisma.rawMaterial.findMany({
-        where: {
-          currentStock: {
-            lte: prisma.rawMaterial.fields.minimumStock,
+          totalAmount: true,
+          purchases: {
+            select: {
+              totalAmount: true,
+            },
           },
         },
-        select: {
-          id: true,
-          name: true,
-          currentStock: true,
-          minimumStock: true,
-        },
-        orderBy: { currentStock: 'asc' },
-        take: 5,
       }),
       prisma.order.findMany({
         take: 5,
@@ -102,26 +73,82 @@ export const getDashboardData = unstable_cache(
           orderStatus: true,
         },
       }),
+      prisma.order.findMany({
+        where: {
+          orderStatus: 'DELIVERED',
+          orderDate: {
+            gte: trendStartDate,
+          },
+        },
+        select: {
+          orderDate: true,
+          totalAmount: true,
+        },
+        orderBy: { orderDate: 'asc' },
+      }),
+      prisma.rawMaterialPurchase.findMany({
+        where: {
+          purchaseDate: {
+            gte: trendStartDate,
+          },
+        },
+        select: {
+          purchaseDate: true,
+          totalAmount: true,
+        },
+        orderBy: { purchaseDate: 'asc' },
+      }),
     ])
 
     const salesAmount = totalSales._sum.totalAmount || 0
     const purchasesAmount = totalPurchases._sum.totalAmount || 0
     const pendingAmount = pendingPayments._sum.pendingAmount || 0
+    const estimatedProfit = deliveredOrders.reduce((sum, order) => {
+      const linkedPurchaseTotal = order.purchases.reduce(
+        (purchaseSum, purchase) => purchaseSum + purchase.totalAmount,
+        0
+      )
+
+      return sum + (order.totalAmount - linkedPurchaseTotal)
+    }, 0)
+    const salesByMonth = new Map<string, number>()
+    const purchasesByMonth = new Map<string, number>()
+    const trendData = Array.from({ length: 6 }, (_, index) => {
+      const date = new Date(now.getFullYear(), now.getMonth() - 5 + index, 1)
+      const key = `${date.getFullYear()}-${date.getMonth()}`
+
+      return {
+        key,
+        month: new Intl.DateTimeFormat('en-US', { month: 'short' }).format(date),
+      }
+    })
+
+    for (const order of salesTrendOrders) {
+      const key = `${order.orderDate.getFullYear()}-${order.orderDate.getMonth()}`
+      salesByMonth.set(key, (salesByMonth.get(key) ?? 0) + order.totalAmount)
+    }
+
+    for (const purchase of purchaseTrendEntries) {
+      const key = `${purchase.purchaseDate.getFullYear()}-${purchase.purchaseDate.getMonth()}`
+      purchasesByMonth.set(key, (purchasesByMonth.get(key) ?? 0) + purchase.totalAmount)
+    }
 
     return {
       stats: {
         totalSales: salesAmount,
         totalPurchases: purchasesAmount,
-        totalProfit: salesAmount - purchasesAmount,
+        totalProfit: estimatedProfit,
         pendingPayments: pendingAmount,
         totalOrders,
         totalCustomers,
         totalProducts,
-        lowStockProductsCount: allProducts.length + allMaterials.length,
       },
-      lowStockProducts: allProducts,
-      lowStockMaterials: allMaterials,
       recentOrders,
+      salesTrend: trendData.map((entry) => ({
+        month: entry.month,
+        sales: salesByMonth.get(entry.key) ?? 0,
+        purchases: purchasesByMonth.get(entry.key) ?? 0,
+      })),
       ordersByStatus: ordersByStatus.map((item) => ({
         orderStatus: item.orderStatus,
         _count: item._count.orderStatus,
@@ -187,7 +214,7 @@ export const getOrderFormData = unstable_cache(
 
 export const getPurchaseFormData = unstable_cache(
   async () => {
-    const [suppliers, materials] = await Promise.all([
+    const [suppliers, materials, orders] = await Promise.all([
       prisma.supplier.findMany({
         select: {
           id: true,
@@ -205,9 +232,45 @@ export const getPurchaseFormData = unstable_cache(
         },
         orderBy: { name: 'asc' },
       }),
+      prisma.order.findMany({
+        where: {
+          orderStatus: {
+            not: 'CANCELLED',
+          },
+        },
+        select: {
+          id: true,
+          orderNumber: true,
+          totalAmount: true,
+          customer: {
+            select: {
+              name: true,
+            },
+          },
+          purchases: {
+            select: {
+              totalAmount: true,
+            },
+          },
+        },
+        orderBy: { orderDate: 'desc' },
+      }),
     ])
 
-    return { suppliers, materials }
+    return {
+      suppliers,
+      materials,
+      orders: orders.map((order) => ({
+        id: order.id,
+        orderNumber: order.orderNumber,
+        totalAmount: order.totalAmount,
+        customerName: order.customer.name,
+        linkedPurchaseTotal: order.purchases.reduce(
+          (sum, purchase) => sum + purchase.totalAmount,
+          0
+        ),
+      })),
+    }
   },
   ['purchase-form-data'],
   {

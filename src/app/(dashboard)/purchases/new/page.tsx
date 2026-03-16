@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { getPurchaseFormData } from '@/lib/data'
 
 export default async function NewPurchasePage() {
-  const { suppliers, materials } = await getPurchaseFormData()
+  const { suppliers, materials, orders } = await getPurchaseFormData()
 
   return (
     <div className="space-y-5">
@@ -23,7 +23,7 @@ export default async function NewPurchasePage() {
         <p className="page-copy">Record raw material purchases and update stock levels</p>
       </div>
 
-      <PurchaseForm suppliers={suppliers} materials={materials} />
+      <PurchaseForm suppliers={suppliers} materials={materials} orders={orders} />
     </div>
   )
 }

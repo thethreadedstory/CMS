@@ -12,6 +12,12 @@ export default async function PurchasesPage() {
       purchaseDate: true,
       totalAmount: true,
       paymentStatus: true,
+      order: {
+        select: {
+          id: true,
+          orderNumber: true,
+        },
+      },
       supplier: {
         select: {
           id: true,

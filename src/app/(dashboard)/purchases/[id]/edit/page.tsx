@@ -11,12 +11,13 @@ export default async function EditPurchasePage({
 }: {
   params: { id: string }
 }) {
-  const [purchase, { suppliers, materials }] = await Promise.all([
+  const [purchase, { suppliers, materials, orders }] = await Promise.all([
     prisma.rawMaterialPurchase.findUnique({
       where: { id: params.id },
       select: {
         id: true,
         purchaseNumber: true,
+        orderId: true,
         supplierId: true,
         purchaseDate: true,
         paymentStatus: true,
@@ -38,6 +39,7 @@ export default async function EditPurchasePage({
   }
 
   const initialData = {
+    orderId: purchase.orderId ?? '',
     supplierId: purchase.supplierId ?? '',
     purchaseDate: purchase.purchaseDate.toISOString().split('T')[0],
     paymentStatus: purchase.paymentStatus,
@@ -69,6 +71,7 @@ export default async function EditPurchasePage({
         purchaseId={purchase.id}
         suppliers={suppliers}
         materials={materials}
+        orders={orders}
         initialData={initialData}
       />
     </div>

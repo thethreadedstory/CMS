@@ -21,6 +21,23 @@ export default async function PurchaseDetailPage({
   const purchase = await prisma.rawMaterialPurchase.findUnique({
     where: { id: params.id },
     include: {
+      order: {
+        select: {
+          id: true,
+          orderNumber: true,
+          totalAmount: true,
+          customer: {
+            select: {
+              name: true,
+            },
+          },
+          purchases: {
+            select: {
+              totalAmount: true,
+            },
+          },
+        },
+      },
       supplier: true,
       items: {
         include: {
@@ -33,6 +50,14 @@ export default async function PurchaseDetailPage({
   if (!purchase) {
     notFound()
   }
+
+  const orderPurchaseSpend = purchase.order?.purchases.reduce(
+    (sum, linkedPurchase) => sum + linkedPurchase.totalAmount,
+    0
+  ) ?? 0
+  const estimatedNetProfit = purchase.order
+    ? purchase.order.totalAmount - orderPurchaseSpend
+    : null
 
   return (
     <div className="space-y-6">
@@ -92,6 +117,47 @@ export default async function PurchaseDetailPage({
               <CardTitle>Purchase Summary</CardTitle>
             </CardHeader>
             <CardContent className="pt-0 space-y-3">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Linked order</span>
+                {purchase.order ? (
+                  <Link
+                    href={`/orders/${purchase.order.id}`}
+                    className="font-medium text-sky-700 hover:underline"
+                  >
+                    {purchase.order.orderNumber}
+                  </Link>
+                ) : (
+                  <span className="font-medium text-foreground">N/A</span>
+                )}
+              </div>
+              {purchase.order && (
+                <>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Order customer</span>
+                    <span className="font-medium text-foreground">
+                      {purchase.order.customer.name}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Order revenue</span>
+                    <span className="font-medium text-foreground">
+                      {formatCurrency(purchase.order.totalAmount)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Raw material spend</span>
+                    <span className="font-medium text-foreground">
+                      {formatCurrency(orderPurchaseSpend)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Estimated net profit</span>
+                    <span className="font-medium text-foreground">
+                      {formatCurrency(estimatedNetProfit ?? 0)}
+                    </span>
+                  </div>
+                </>
+              )}
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Supplier</span>
                 <span className="font-medium text-foreground">

@@ -20,7 +20,6 @@ interface StatsProps {
     totalOrders: number
     totalCustomers: number
     totalProducts: number
-    lowStockProductsCount: number
   }
 }
 
@@ -58,7 +57,7 @@ export function DashboardStats({ stats }: StatsProps) {
       href: '/purchases',
     },
     {
-      title: 'Total Profit',
+      title: 'Estimated Profit',
       value: formatCurrency(stats.totalProfit),
       icon: DollarSign,
       iconColor: '#0d9488',
@@ -106,16 +105,6 @@ export function DashboardStats({ stats }: StatsProps) {
       cardBg: 'rgba(124,58,237,0.03)',
       accentColor: '#7c3aed',
       href: '/products',
-    },
-    {
-      title: 'Low Stock Items',
-      value: stats.lowStockProductsCount.toString(),
-      icon: AlertCircle,
-      iconColor: '#ea580c',
-      iconBg: 'rgba(234,88,12,0.1)',
-      cardBg: 'rgba(234,88,12,0.03)',
-      accentColor: '#ea580c',
-      href: '/inventory',
     },
   ]
 

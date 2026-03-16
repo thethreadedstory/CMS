@@ -10,6 +10,7 @@ interface PurchaseItemInput {
 }
 
 type ParsedPurchaseInput = {
+  orderId: string | null
   supplierId: string | null
   purchaseDate: Date
   paymentStatus: 'UNPAID' | 'PARTIALLY_PAID' | 'PAID'
@@ -19,6 +20,7 @@ type ParsedPurchaseInput = {
 }
 
 function parsePurchaseInput(formData: FormData): ParsedPurchaseInput {
+  const orderId = (formData.get('orderId') as string | null)?.trim()
   const supplierId = (formData.get('supplierId') as string | null)?.trim()
   const purchaseDateValue = formData.get('purchaseDate') as string
   const paymentStatus = (formData.get('paymentStatus') as string)?.trim()
@@ -63,6 +65,7 @@ function parsePurchaseInput(formData: FormData): ParsedPurchaseInput {
   )
 
   return {
+    orderId: orderId || null,
     supplierId: supplierId || null,
     purchaseDate,
     paymentStatus: paymentStatus as ParsedPurchaseInput['paymentStatus'],
@@ -72,22 +75,29 @@ function parsePurchaseInput(formData: FormData): ParsedPurchaseInput {
   }
 }
 
-async function revalidatePurchasePaths(purchaseId?: string) {
+async function revalidatePurchasePaths(
+  purchaseId?: string,
+  orderIds: Array<string | null | undefined> = []
+) {
   revalidatePath('/purchases')
   revalidatePath('/inventory')
   revalidatePath('/suppliers')
   revalidatePath('/reports')
+  revalidatePath('/orders')
   revalidatePath('/purchases/new')
   if (purchaseId) {
     revalidatePath(`/purchases/${purchaseId}`)
     revalidatePath(`/purchases/${purchaseId}/edit`)
+  }
+  for (const orderId of new Set(orderIds.filter(Boolean))) {
+    revalidatePath(`/orders/${orderId}`)
   }
   revalidateTag('purchase-form-data')
   revalidateTag('dashboard')
 }
 
 export async function createPurchase(formData: FormData) {
-  const { supplierId, purchaseDate, paymentStatus, notes, items, totalAmount } =
+  const { orderId, supplierId, purchaseDate, paymentStatus, notes, items, totalAmount } =
     parsePurchaseInput(formData)
 
   const purchaseCount = await prisma.rawMaterialPurchase.count()
@@ -95,194 +105,236 @@ export async function createPurchase(formData: FormData) {
     purchaseCount + 1
   ).padStart(4, '0')}`
 
-  await prisma.$transaction(async (tx) => {
-    await tx.rawMaterialPurchase.create({
-      data: {
-        purchaseNumber,
-        supplierId,
-        purchaseDate,
-        totalAmount,
-        paymentStatus,
-        notes,
-        items: {
-          create: items.map((item) => ({
-            materialId: item.materialId,
-            quantity: item.quantity,
-            costPerUnit: item.costPerUnit,
-            total: item.quantity * item.costPerUnit,
-          })),
-        },
-      },
-    })
-
-    await Promise.all(
-      items.map((item) =>
-        tx.rawMaterial.update({
-          where: { id: item.materialId },
-          data: {
-            currentStock: { increment: item.quantity },
-            costPerUnit: item.costPerUnit,
-            supplierId: supplierId || undefined,
+  await prisma.$transaction(
+    async (tx) => {
+      await tx.rawMaterialPurchase.create({
+        data: {
+          purchaseNumber,
+          orderId,
+          supplierId,
+          purchaseDate,
+          totalAmount,
+          paymentStatus,
+          notes,
+          items: {
+            create: items.map((item) => ({
+              materialId: item.materialId,
+              quantity: item.quantity,
+              costPerUnit: item.costPerUnit,
+              total: item.quantity * item.costPerUnit,
+            })),
           },
-        })
-      )
-    )
-  })
+        },
+      })
 
-  await revalidatePurchasePaths()
+      await Promise.all(
+        items.map((item) =>
+          tx.rawMaterial.update({
+            where: { id: item.materialId },
+            data: {
+              currentStock: { increment: item.quantity },
+              costPerUnit: item.costPerUnit,
+              supplierId: supplierId || undefined,
+            },
+          })
+        )
+      )
+    },
+    {
+      maxWait: 10000,
+      timeout: 15000,
+    }
+  )
+
+  await revalidatePurchasePaths(undefined, [orderId])
 }
 
 export async function updatePurchase(purchaseId: string, formData: FormData) {
-  const { supplierId, purchaseDate, paymentStatus, notes, items, totalAmount } =
+  const { orderId, supplierId, purchaseDate, paymentStatus, notes, items, totalAmount } =
     parsePurchaseInput(formData)
 
-  await prisma.$transaction(async (tx) => {
-    const existingPurchase = await tx.rawMaterialPurchase.findUnique({
-      where: { id: purchaseId },
-      include: {
-        items: {
-          select: {
-            materialId: true,
-            quantity: true,
+  let previousOrderId: string | null = null
+
+  await prisma.$transaction(
+    async (tx) => {
+      const existingPurchase = await tx.rawMaterialPurchase.findUnique({
+        where: { id: purchaseId },
+        include: {
+          order: {
+            select: {
+              id: true,
+            },
+          },
+          items: {
+            select: {
+              materialId: true,
+              quantity: true,
+            },
           },
         },
-      },
-    })
+      })
 
-    if (!existingPurchase) {
-      throw new Error('Purchase not found')
-    }
-
-    const previousQuantities = new Map(
-      existingPurchase.items.map((item) => [item.materialId, item.quantity])
-    )
-    const nextItemsByMaterial = new Map(items.map((item) => [item.materialId, item]))
-    const materialIds = Array.from(
-      new Set([...previousQuantities.keys(), ...nextItemsByMaterial.keys()])
-    )
-
-    const materials = await tx.rawMaterial.findMany({
-      where: { id: { in: materialIds } },
-      select: {
-        id: true,
-        currentStock: true,
-      },
-    })
-
-    const stockByMaterial = new Map(materials.map((material) => [material.id, material.currentStock]))
-
-    for (const materialId of materialIds) {
-      const previousQuantity = previousQuantities.get(materialId) ?? 0
-      const nextQuantity = nextItemsByMaterial.get(materialId)?.quantity ?? 0
-      const delta = nextQuantity - previousQuantity
-
-      if (delta < 0 && (stockByMaterial.get(materialId) ?? 0) < Math.abs(delta)) {
-        throw new Error('Cannot reduce this purchase because some stock has already been used')
+      if (!existingPurchase) {
+        throw new Error('Purchase not found')
       }
-    }
 
-    await tx.rawMaterialPurchaseItem.deleteMany({
-      where: { purchaseId },
-    })
+      previousOrderId = existingPurchase.order?.id ?? null
 
-    await tx.rawMaterialPurchase.update({
-      where: { id: purchaseId },
-      data: {
-        supplierId,
-        purchaseDate,
-        totalAmount,
-        paymentStatus,
-        notes,
-        items: {
-          create: items.map((item) => ({
-            materialId: item.materialId,
-            quantity: item.quantity,
-            costPerUnit: item.costPerUnit,
-            total: item.quantity * item.costPerUnit,
-          })),
+      const previousQuantities = new Map(
+        existingPurchase.items.map((item) => [item.materialId, item.quantity])
+      )
+      const nextItemsByMaterial = new Map(items.map((item) => [item.materialId, item]))
+      const materialIds = Array.from(
+        new Set([...previousQuantities.keys(), ...nextItemsByMaterial.keys()])
+      )
+
+      const materials = await tx.rawMaterial.findMany({
+        where: { id: { in: materialIds } },
+        select: {
+          id: true,
+          currentStock: true,
         },
-      },
-    })
+      })
 
-    await Promise.all(
-      materialIds.map((materialId) => {
+      const stockByMaterial = new Map(
+        materials.map((material) => [material.id, material.currentStock])
+      )
+
+      for (const materialId of materialIds) {
         const previousQuantity = previousQuantities.get(materialId) ?? 0
-        const nextItem = nextItemsByMaterial.get(materialId)
-        const nextQuantity = nextItem?.quantity ?? 0
+        const nextQuantity = nextItemsByMaterial.get(materialId)?.quantity ?? 0
         const delta = nextQuantity - previousQuantity
 
-        return tx.rawMaterial.update({
-          where: { id: materialId },
-          data: {
-            currentStock: { increment: delta },
-            ...(nextItem
-              ? {
-                  costPerUnit: nextItem.costPerUnit,
-                  supplierId: supplierId || undefined,
-                }
-              : {}),
-          },
-        })
-      })
-    )
-  })
+        if (delta < 0 && (stockByMaterial.get(materialId) ?? 0) < Math.abs(delta)) {
+          throw new Error('Cannot reduce this purchase because some stock has already been used')
+        }
+      }
 
-  await revalidatePurchasePaths(purchaseId)
+      await tx.rawMaterialPurchaseItem.deleteMany({
+        where: { purchaseId },
+      })
+
+      await tx.rawMaterialPurchase.update({
+        where: { id: purchaseId },
+        data: {
+          orderId,
+          supplierId,
+          purchaseDate,
+          totalAmount,
+          paymentStatus,
+          notes,
+          items: {
+            create: items.map((item) => ({
+              materialId: item.materialId,
+              quantity: item.quantity,
+              costPerUnit: item.costPerUnit,
+              total: item.quantity * item.costPerUnit,
+            })),
+          },
+        },
+      })
+
+      await Promise.all(
+        materialIds.map((materialId) => {
+          const previousQuantity = previousQuantities.get(materialId) ?? 0
+          const nextItem = nextItemsByMaterial.get(materialId)
+          const nextQuantity = nextItem?.quantity ?? 0
+          const delta = nextQuantity - previousQuantity
+
+          return tx.rawMaterial.update({
+            where: { id: materialId },
+            data: {
+              currentStock: { increment: delta },
+              ...(nextItem
+                ? {
+                    costPerUnit: nextItem.costPerUnit,
+                    supplierId: supplierId || undefined,
+                  }
+                : {}),
+            },
+          })
+        })
+      )
+    },
+    {
+      maxWait: 10000,
+      timeout: 15000,
+    }
+  )
+
+  await revalidatePurchasePaths(purchaseId, [previousOrderId, orderId])
 }
 
 export async function deletePurchase(purchaseId: string) {
-  await prisma.$transaction(async (tx) => {
-    const existingPurchase = await tx.rawMaterialPurchase.findUnique({
-      where: { id: purchaseId },
-      include: {
-        items: {
-          select: {
-            materialId: true,
-            quantity: true,
+  let previousOrderId: string | null = null
+
+  await prisma.$transaction(
+    async (tx) => {
+      const existingPurchase = await tx.rawMaterialPurchase.findUnique({
+        where: { id: purchaseId },
+        include: {
+          order: {
+            select: {
+              id: true,
+            },
+          },
+          items: {
+            select: {
+              materialId: true,
+              quantity: true,
+            },
           },
         },
-      },
-    })
+      })
 
-    if (!existingPurchase) {
-      throw new Error('Purchase not found')
-    }
-
-    const materials = await tx.rawMaterial.findMany({
-      where: {
-        id: {
-          in: existingPurchase.items.map((item) => item.materialId),
-        },
-      },
-      select: {
-        id: true,
-        currentStock: true,
-      },
-    })
-
-    const stockByMaterial = new Map(materials.map((material) => [material.id, material.currentStock]))
-
-    for (const item of existingPurchase.items) {
-      if ((stockByMaterial.get(item.materialId) ?? 0) < item.quantity) {
-        throw new Error('Cannot delete this purchase because some stock has already been used')
+      if (!existingPurchase) {
+        throw new Error('Purchase not found')
       }
-    }
 
-    await Promise.all(
-      existingPurchase.items.map((item) =>
-        tx.rawMaterial.update({
-          where: { id: item.materialId },
-          data: {
-            currentStock: { decrement: item.quantity },
+      previousOrderId = existingPurchase.order?.id ?? null
+
+      const materials = await tx.rawMaterial.findMany({
+        where: {
+          id: {
+            in: existingPurchase.items.map((item) => item.materialId),
           },
-        })
+        },
+        select: {
+          id: true,
+          currentStock: true,
+        },
+      })
+
+      const stockByMaterial = new Map(
+        materials.map((material) => [material.id, material.currentStock])
       )
-    )
 
-    await tx.rawMaterialPurchase.delete({
-      where: { id: purchaseId },
-    })
-  })
+      for (const item of existingPurchase.items) {
+        if ((stockByMaterial.get(item.materialId) ?? 0) < item.quantity) {
+          throw new Error('Cannot delete this purchase because some stock has already been used')
+        }
+      }
 
-  await revalidatePurchasePaths(purchaseId)
+      await Promise.all(
+        existingPurchase.items.map((item) =>
+          tx.rawMaterial.update({
+            where: { id: item.materialId },
+            data: {
+              currentStock: { decrement: item.quantity },
+            },
+          })
+        )
+      )
+
+      await tx.rawMaterialPurchase.delete({
+        where: { id: purchaseId },
+      })
+    },
+    {
+      maxWait: 10000,
+      timeout: 15000,
+    }
+  )
+
+  await revalidatePurchasePaths(purchaseId, [previousOrderId])
 }

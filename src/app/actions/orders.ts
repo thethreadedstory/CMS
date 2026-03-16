@@ -49,7 +49,10 @@ export async function createOrder(formData: FormData) {
   revalidatePath('/orders')
   revalidatePath('/customers')
   revalidatePath(`/customers/${customerId}`)
+  revalidatePath('/purchases')
+  revalidatePath('/purchases/new')
   revalidatePath('/dashboard')
+  revalidateTag('purchase-form-data')
   revalidateTag('dashboard')
 }
 
@@ -108,7 +111,10 @@ export async function updateOrderStatus(orderId: string, status: string) {
   revalidatePath('/customers')
   revalidatePath(`/customers/${result.customerId}`)
   revalidatePath('/products')
+  revalidatePath('/purchases')
+  revalidatePath('/purchases/new')
   revalidatePath('/dashboard')
+  revalidateTag('purchase-form-data')
   revalidateTag('dashboard')
 }
 
@@ -159,7 +165,10 @@ export async function updateOrder(orderId: string, formData: FormData) {
   revalidatePath(`/orders/${orderId}`)
   revalidatePath('/customers')
   revalidatePath(`/customers/${customerId}`)
+  revalidatePath('/purchases')
+  revalidatePath('/purchases/new')
   revalidatePath('/dashboard')
+  revalidateTag('purchase-form-data')
   revalidateTag('dashboard')
 }
 
@@ -179,7 +188,11 @@ export async function deleteOrder(orderId: string) {
   revalidatePath('/customers')
   if (existingOrder) {
     revalidatePath(`/customers/${existingOrder.customerId}`)
+    revalidatePath(`/orders/${orderId}`)
   }
+  revalidatePath('/purchases')
+  revalidatePath('/purchases/new')
   revalidatePath('/dashboard')
+  revalidateTag('purchase-form-data')
   revalidateTag('dashboard')
 }

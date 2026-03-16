@@ -135,6 +135,7 @@ model Order {
   customer        Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
   items           OrderItem[]
   payments        Payment[]
+  purchases       RawMaterialPurchase[]
   
   @@index([customerId])
   @@index([orderNumber])
@@ -248,6 +249,7 @@ model Supplier {
 model RawMaterialPurchase {
   id              String                      @id @default(cuid())
   purchaseNumber  String                      @unique
+  orderId         String?
   supplierId      String?
   purchaseDate    DateTime                    @default(now())
   totalAmount     Float
@@ -256,9 +258,11 @@ model RawMaterialPurchase {
   createdAt       DateTime                    @default(now())
   updatedAt       DateTime                    @updatedAt
   
+  order           Order?                      @relation(fields: [orderId], references: [id], onDelete: SetNull)
   supplier        Supplier?                   @relation(fields: [supplierId], references: [id], onDelete: SetNull)
   items           RawMaterialPurchaseItem[]
   
+  @@index([orderId])
   @@index([supplierId])
   @@index([purchaseNumber])
   @@index([purchaseDate])

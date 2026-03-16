@@ -23,6 +23,14 @@ interface PurchaseFormMaterial {
   currentStock: number
 }
 
+interface PurchaseFormOrder {
+  id: string
+  orderNumber: string
+  totalAmount: number
+  customerName: string
+  linkedPurchaseTotal: number
+}
+
 interface PurchaseItem {
   materialId: string
   quantity: number
@@ -32,8 +40,10 @@ interface PurchaseItem {
 interface PurchaseFormProps {
   suppliers: PurchaseFormSupplier[]
   materials: PurchaseFormMaterial[]
+  orders: PurchaseFormOrder[]
   purchaseId?: string
   initialData?: {
+    orderId: string
     supplierId: string
     purchaseDate: string
     paymentStatus: string
@@ -45,12 +55,14 @@ interface PurchaseFormProps {
 export function PurchaseForm({
   suppliers,
   materials,
+  orders,
   purchaseId,
   initialData,
 }: PurchaseFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [orderId, setOrderId] = useState(initialData?.orderId ?? '')
   const [supplierId, setSupplierId] = useState(initialData?.supplierId ?? '')
   const [purchaseDate, setPurchaseDate] = useState(
     initialData?.purchaseDate ?? new Date().toISOString().split('T')[0]
@@ -64,6 +76,35 @@ export function PurchaseForm({
     () => items.reduce((sum, item) => sum + item.quantity * item.costPerUnit, 0),
     [items]
   )
+  const initialTotalAmount = useMemo(
+    () =>
+      (initialData?.items ?? []).reduce(
+        (sum, item) => sum + item.quantity * item.costPerUnit,
+        0
+      ),
+    [initialData?.items]
+  )
+  const selectedOrder = useMemo(
+    () => orders.find((entry) => entry.id === orderId) ?? null,
+    [orderId, orders]
+  )
+  const linkedRawMaterialSpend = useMemo(() => {
+    if (!selectedOrder) {
+      return null
+    }
+
+    const previousSpendForThisPurchase =
+      purchaseId && initialData?.orderId === selectedOrder.id ? initialTotalAmount : 0
+
+    return selectedOrder.linkedPurchaseTotal - previousSpendForThisPurchase + totalAmount
+  }, [initialData?.orderId, initialTotalAmount, purchaseId, selectedOrder, totalAmount])
+  const estimatedNetProfit = useMemo(() => {
+    if (!selectedOrder || linkedRawMaterialSpend === null) {
+      return null
+    }
+
+    return selectedOrder.totalAmount - linkedRawMaterialSpend
+  }, [linkedRawMaterialSpend, selectedOrder])
 
   const addItem = () => {
     setItems((currentItems) => [
@@ -124,6 +165,7 @@ export function PurchaseForm({
 
     try {
       const formData = new FormData()
+      formData.set('orderId', orderId)
       formData.set('supplierId', supplierId)
       formData.set('purchaseDate', purchaseDate)
       formData.set('paymentStatus', paymentStatus)
@@ -155,6 +197,27 @@ export function PurchaseForm({
         </CardHeader>
         <CardContent className="pt-0">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="orderId">Purchase for Which Order</Label>
+              <select
+                id="orderId"
+                value={orderId}
+                onChange={(event) => setOrderId(event.target.value)}
+                className="field-select"
+                data-testid="purchase-order-select"
+              >
+                <option value="">Not linked to any order</option>
+                {orders.map((order) => (
+                  <option key={order.id} value={order.id}>
+                    {order.orderNumber} - {order.customerName} - {formatCurrency(order.totalAmount)}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-muted-foreground">
+                Link this purchase to an order to track raw material spend and estimated profit.
+              </p>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="supplierId">Supplier</Label>
               <select
@@ -206,6 +269,38 @@ export function PurchaseForm({
               </select>
             </div>
           </div>
+
+          {selectedOrder && linkedRawMaterialSpend !== null && estimatedNetProfit !== null && (
+            <div className="mt-6 rounded-[1.6rem] border border-border/80 bg-[hsl(var(--surface-soft))]/65 p-5">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-medium text-foreground">
+                    {selectedOrder.orderNumber} · {selectedOrder.customerName}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Estimated after saving this purchase
+                  </p>
+                </div>
+                <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                  Order total {formatCurrency(selectedOrder.totalAmount)}
+                </p>
+              </div>
+              <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="rounded-[1.2rem] border border-border/70 bg-background/70 p-4">
+                  <p className="text-sm text-muted-foreground">Raw material spend</p>
+                  <p className="mt-2 text-2xl font-semibold text-foreground">
+                    {formatCurrency(linkedRawMaterialSpend)}
+                  </p>
+                </div>
+                <div className="rounded-[1.2rem] border border-border/70 bg-background/70 p-4">
+                  <p className="text-sm text-muted-foreground">Estimated net profit</p>
+                  <p className="mt-2 text-2xl font-semibold text-foreground">
+                    {formatCurrency(estimatedNetProfit)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 

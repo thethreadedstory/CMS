@@ -26,6 +26,22 @@ export default async function OrderDetailPage({
       payments: {
         orderBy: { paymentDate: 'desc' },
       },
+      purchases: {
+        orderBy: { purchaseDate: 'desc' },
+        select: {
+          id: true,
+          purchaseNumber: true,
+          purchaseDate: true,
+          totalAmount: true,
+          paymentStatus: true,
+          supplier: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
     },
   })
 
@@ -49,6 +65,11 @@ export default async function OrderDetailPage({
     PAID: 'bg-green-100 text-green-800',
     REFUNDED: 'border-stone-200 bg-stone-100/80 text-stone-800',
   }
+  const rawMaterialSpend = order.purchases.reduce(
+    (sum, purchase) => sum + purchase.totalAmount,
+    0
+  )
+  const estimatedNetProfit = order.totalAmount - rawMaterialSpend
 
   return (
     <div className="space-y-6">
@@ -222,6 +243,61 @@ export default async function OrderDetailPage({
                     Record Payment
                   </Button>
                 </Link>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Raw Material Profit Tracking</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0 space-y-4">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Order revenue</span>
+                <span className="font-medium text-foreground">
+                  {formatCurrency(order.totalAmount)}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Raw material spend</span>
+                <span className="font-medium text-foreground">
+                  {formatCurrency(rawMaterialSpend)}
+                </span>
+              </div>
+              <div className="flex justify-between border-t pt-3 text-sm">
+                <span className="font-medium text-foreground">Estimated net profit</span>
+                <span className="font-semibold text-foreground">
+                  {formatCurrency(estimatedNetProfit)}
+                </span>
+              </div>
+
+              {order.purchases.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No raw material purchases have been linked to this order yet.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {order.purchases.map((purchase) => (
+                    <Link
+                      key={purchase.id}
+                      href={`/purchases/${purchase.id}`}
+                      className="block rounded-lg border border-border/70 p-3 transition-colors hover:bg-[hsl(var(--surface-soft))]/60"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="font-medium text-foreground">{purchase.purchaseNumber}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {formatDate(purchase.purchaseDate)}
+                            {purchase.supplier?.name ? ` · ${purchase.supplier.name}` : ''}
+                          </p>
+                        </div>
+                        <p className="font-semibold text-foreground">
+                          {formatCurrency(purchase.totalAmount)}
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
               )}
             </CardContent>
           </Card>

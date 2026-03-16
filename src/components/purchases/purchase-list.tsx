@@ -18,6 +18,10 @@ interface Purchase {
   purchaseDate: Date
   totalAmount: number
   paymentStatus: string
+  order: {
+    id: string
+    orderNumber: string
+  } | null
   supplier: {
     id: string
     name: string
@@ -92,6 +96,7 @@ export function PurchaseList({ purchases }: PurchaseListProps) {
                 <thead>
                   <tr>
                     <th>Purchase</th>
+                    <th>Order</th>
                     <th>Supplier</th>
                     <th>Date</th>
                     <th>Amount</th>
@@ -107,6 +112,18 @@ export function PurchaseList({ purchases }: PurchaseListProps) {
                         <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                           {purchase._count.items} item(s)
                         </p>
+                      </td>
+                      <td className="text-sm text-foreground">
+                        {purchase.order ? (
+                          <Link
+                            href={`/orders/${purchase.order.id}`}
+                            className="font-medium text-sky-700 hover:underline"
+                          >
+                            {purchase.order.orderNumber}
+                          </Link>
+                        ) : (
+                          'N/A'
+                        )}
                       </td>
                       <td className="text-sm text-foreground">
                         {purchase.supplier?.name || 'N/A'}
