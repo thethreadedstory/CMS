@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { startTransition, useEffect, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -26,15 +26,8 @@ interface Order {
     id: string
     name: string
   }
-  items: Array<{
-    id: string
-    quantity: number
-    product: {
-      name: string
-    }
-  }>
   _count: {
-    payments: number
+    items: number
   }
 }
 
@@ -76,13 +69,29 @@ export function OrderList({
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState<{ id: string; orderNumber: string } | null>(null)
 
-  const handleFilter = (searchValue: string, statusValue: string, paymentValue: string) => {
+  const navigateWithFilters = (searchValue: string, statusValue: string, paymentValue: string) => {
     const params = new URLSearchParams()
     if (searchValue) params.set('search', searchValue)
     if (statusValue) params.set('status', statusValue)
     if (paymentValue) params.set('payment', paymentValue)
-    router.push(`/orders${params.toString() ? `?${params.toString()}` : ''}`)
+    startTransition(() => {
+      router.replace(`/orders${params.toString() ? `?${params.toString()}` : ''}`, {
+        scroll: false,
+      })
+    })
   }
+
+  useEffect(() => {
+    if (search === initialSearch) {
+      return
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      navigateWithFilters(search, status, payment)
+    }, 300)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [search, status, payment, initialSearch])
 
   const handleDeleteClick = (id: string, orderNumber: string) => {
     setSelectedOrder({ id, orderNumber })
@@ -117,10 +126,7 @@ export function OrderList({
           <Input
             placeholder="Search by order number..."
             value={search}
-            onChange={(e) => {
-              setSearch(e.target.value)
-              handleFilter(e.target.value, status, payment)
-            }}
+            onChange={(e) => setSearch(e.target.value)}
             className="pl-10"
             data-testid="order-search-input"
           />
@@ -129,7 +135,7 @@ export function OrderList({
           value={status}
           onChange={(e) => {
             setStatus(e.target.value)
-            handleFilter(search, e.target.value, payment)
+            navigateWithFilters(search, e.target.value, payment)
           }}
           className="field-select sm:max-w-[220px]"
           data-testid="order-status-filter"
@@ -147,7 +153,7 @@ export function OrderList({
           value={payment}
           onChange={(e) => {
             setPayment(e.target.value)
-            handleFilter(search, status, e.target.value)
+            navigateWithFilters(search, status, e.target.value)
           }}
           className="field-select sm:max-w-[220px]"
           data-testid="order-payment-filter"
@@ -199,7 +205,7 @@ export function OrderList({
                   <tr key={order.id} data-testid={`order-row-${order.id}`}>
                     <td>
                       <p className="font-medium text-foreground">{order.orderNumber}</p>
-                      <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{order.items.length} item(s)</p>
+                      <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{order._count.items} item(s)</p>
                     </td>
                     <td className="text-sm text-foreground">
                       {order.customer.name}

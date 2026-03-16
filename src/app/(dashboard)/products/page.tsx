@@ -1,3 +1,4 @@
+import { getProductCategoryOptions } from '@/lib/data'
 import { prisma } from '@/lib/prisma'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
@@ -27,18 +28,28 @@ export default async function ProductsPage({
           categoryFilter ? { categoryId: categoryFilter } : {},
         ],
       },
-      include: {
-        category: true,
-        variants: true,
+      select: {
+        id: true,
+        name: true,
+        sku: true,
+        sellingPrice: true,
+        costPrice: true,
+        currentStock: true,
+        lowStockAlert: true,
+        isActive: true,
+        category: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
         _count: {
-          select: { orderItems: true },
+          select: { variants: true },
         },
       },
       orderBy: { createdAt: 'desc' },
     }),
-    prisma.productCategory.findMany({
-      orderBy: { name: 'asc' },
-    }),
+    getProductCategoryOptions(),
   ])
 
   return (

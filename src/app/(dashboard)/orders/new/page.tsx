@@ -1,25 +1,11 @@
-import { prisma } from '@/lib/prisma'
 import { OrderForm } from '@/components/orders/order-form'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
+import { getOrderFormData } from '@/lib/data'
 
 export default async function NewOrderPage() {
-  const [customers, products] = await Promise.all([
-    prisma.customer.findMany({
-      orderBy: { name: 'asc' },
-    }),
-    prisma.product.findMany({
-      where: { isActive: true },
-      include: {
-        category: true,
-        variants: {
-          orderBy: [{ variantType: 'asc' }, { variantValue: 'asc' }],
-        },
-      },
-      orderBy: { name: 'asc' },
-    }),
-  ])
+  const { customers, products } = await getOrderFormData()
 
   return (
     <div className="space-y-5">

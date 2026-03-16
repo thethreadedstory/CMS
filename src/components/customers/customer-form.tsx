@@ -42,7 +42,6 @@ export function CustomerForm({ customer }: CustomerFormProps) {
         await createCustomer(formData)
       }
       router.push('/customers')
-      router.refresh()
     } catch (err) {
       setError('Failed to save customer. Please try again.')
       setLoading(false)

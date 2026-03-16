@@ -6,11 +6,21 @@ import { PurchaseList } from '@/components/purchases/purchase-list'
 
 export default async function PurchasesPage() {
   const purchases = await prisma.rawMaterialPurchase.findMany({
-    include: {
-      supplier: true,
-      items: {
-        include: {
-          material: true,
+    select: {
+      id: true,
+      purchaseNumber: true,
+      purchaseDate: true,
+      totalAmount: true,
+      paymentStatus: true,
+      supplier: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      _count: {
+        select: {
+          items: true,
         },
       },
     },

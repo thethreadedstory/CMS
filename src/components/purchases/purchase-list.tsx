@@ -14,13 +14,9 @@ interface Purchase {
     id: string
     name: string
   } | null
-  items: Array<{
-    id: string
-    quantity: number
-    material: {
-      name: string
-    }
-  }>
+  _count: {
+    items: number
+  }
 }
 
 interface PurchaseListProps {
@@ -66,7 +62,7 @@ export function PurchaseList({ purchases }: PurchaseListProps) {
                 </div>
 
                 <div className="border-t border-border/70 pt-4 text-sm text-muted-foreground">
-                  {purchase.items.length} item(s)
+                  {purchase._count.items} item(s)
                 </div>
               </div>
             </Card>

@@ -1,7 +1,7 @@
 'use server'
 
 import { prisma } from '@/lib/prisma'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 
 export async function createCategory(formData: FormData) {
   const name = formData.get('name') as string
@@ -16,6 +16,7 @@ export async function createCategory(formData: FormData) {
 
   revalidatePath('/products/categories')
   revalidatePath('/products')
+  revalidateTag('product-categories')
 }
 
 export async function updateCategory(id: string, formData: FormData) {
@@ -32,6 +33,7 @@ export async function updateCategory(id: string, formData: FormData) {
 
   revalidatePath('/products/categories')
   revalidatePath('/products')
+  revalidateTag('product-categories')
 }
 
 export async function deleteCategory(id: string) {
@@ -41,4 +43,5 @@ export async function deleteCategory(id: string) {
 
   revalidatePath('/products/categories')
   revalidatePath('/products')
+  revalidateTag('product-categories')
 }

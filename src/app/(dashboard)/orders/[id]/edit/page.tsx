@@ -4,32 +4,42 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { notFound } from 'next/navigation'
+import { getOrderFormData } from '@/lib/data'
 
 export default async function EditOrderPage({
   params,
 }: {
   params: { id: string }
 }) {
-  const [order, customers, products] = await Promise.all([
+  const [order, { customers, products }] = await Promise.all([
     prisma.order.findUnique({
       where: { id: params.id },
-      include: {
-        items: true,
-      },
-    }),
-    prisma.customer.findMany({
-      orderBy: { name: 'asc' },
-    }),
-    prisma.product.findMany({
-      where: { isActive: true },
-      include: {
-        category: true,
-        variants: {
-          orderBy: [{ variantType: 'asc' }, { variantValue: 'asc' }],
+      select: {
+        id: true,
+        orderNumber: true,
+        customerId: true,
+        orderDate: true,
+        subtotal: true,
+        discount: true,
+        shippingCharge: true,
+        totalAmount: true,
+        paidAmount: true,
+        pendingAmount: true,
+        paymentStatus: true,
+        notes: true,
+        items: {
+          select: {
+            id: true,
+            productId: true,
+            variantId: true,
+            quantity: true,
+            unitPrice: true,
+            total: true,
+          },
         },
       },
-      orderBy: { name: 'asc' },
     }),
+    getOrderFormData(),
   ])
 
   if (!order) {

@@ -24,10 +24,9 @@ interface Material {
 
 interface InventoryListProps {
   materials: Material[]
-  categories: Array<{ id: string; name: string }>
 }
 
-export function InventoryList({ materials, categories }: InventoryListProps) {
+export function InventoryList({ materials }: InventoryListProps) {
   return (
     <div className="space-y-4">
       {materials.length === 0 ? (

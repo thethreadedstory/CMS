@@ -5,18 +5,29 @@ import Link from 'next/link'
 import { InventoryList } from '@/components/inventory/inventory-list'
 
 export default async function InventoryPage() {
-  const [materials, categories] = await Promise.all([
-    prisma.rawMaterial.findMany({
-      include: {
-        category: true,
-        supplier: true,
+  const materials = await prisma.rawMaterial.findMany({
+    select: {
+      id: true,
+      name: true,
+      unit: true,
+      currentStock: true,
+      minimumStock: true,
+      costPerUnit: true,
+      category: {
+        select: {
+          id: true,
+          name: true,
+        },
       },
-      orderBy: { name: 'asc' },
-    }),
-    prisma.rawMaterialCategory.findMany({
-      orderBy: { name: 'asc' },
-    }),
-  ])
+      supplier: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+    orderBy: { name: 'asc' },
+  })
 
   return (
     <div className="space-y-6">
@@ -33,7 +44,7 @@ export default async function InventoryPage() {
         </Link>
       </div>
 
-      <InventoryList materials={materials} categories={categories} />
+      <InventoryList materials={materials} />
     </div>
   )
 }

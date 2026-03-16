@@ -178,7 +178,6 @@ export function OrderForm({ customers, products }: OrderFormProps) {
 
       await createOrder(formData)
       router.push('/orders')
-      router.refresh()
     } catch {
       setError('Failed to create order. Please try again.')
       setLoading(false)

@@ -14,19 +14,39 @@ export default async function CustomerDetailPage({
 }) {
   const customer = await prisma.customer.findUnique({
     where: { id: params.id },
-    include: {
+    select: {
+      id: true,
+      name: true,
+      phone: true,
+      email: true,
+      address: true,
+      city: true,
+      notes: true,
       orders: {
         orderBy: { orderDate: 'desc' },
-        include: {
-          items: {
-            include: {
-              product: true,
+        select: {
+          id: true,
+          orderNumber: true,
+          orderStatus: true,
+          totalAmount: true,
+          paidAmount: true,
+          pendingAmount: true,
+          orderDate: true,
+          _count: {
+            select: {
+              items: true,
             },
           },
         },
       },
       payments: {
         orderBy: { paymentDate: 'desc' },
+        select: {
+          id: true,
+          amount: true,
+          paymentDate: true,
+          paymentMethod: true,
+        },
       },
     },
   })
@@ -187,7 +207,7 @@ export default async function CustomerDetailPage({
                   <p className="text-sm text-muted-foreground">{formatDate(order.orderDate)}</p>
                   <div className="mt-2">
                     <p className="text-xs text-muted-foreground">
-                      {order.items.length} item(s) • Paid: {formatCurrency(order.paidAmount)} • Pending: {formatCurrency(order.pendingAmount)}
+                      {order._count.items} item(s) • Paid: {formatCurrency(order.paidAmount)} • Pending: {formatCurrency(order.pendingAmount)}
                     </p>
                   </div>
                 </Link>

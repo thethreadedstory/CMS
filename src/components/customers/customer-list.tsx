@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { startTransition, useEffect, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils'
@@ -35,12 +35,24 @@ export function CustomerList({ customers, initialSearch }: CustomerListProps) {
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [selectedCustomer, setSelectedCustomer] = useState<{ id: string; name: string } | null>(null)
 
-  const handleSearch = (value: string) => {
-    setSearch(value)
+  useEffect(() => {
     const params = new URLSearchParams()
-    if (value) params.set('search', value)
-    router.push(`/customers${value ? `?${params.toString()}` : ''}`)
-  }
+    if (search) params.set('search', search)
+
+    const timeoutId = window.setTimeout(() => {
+      if (search === initialSearch) {
+        return
+      }
+
+      startTransition(() => {
+        router.replace(`/customers${search ? `?${params.toString()}` : ''}`, {
+          scroll: false,
+        })
+      })
+    }, 300)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [search, initialSearch, router])
 
   const handleDeleteClick = (id: string, name: string) => {
     setSelectedCustomer({ id, name })
@@ -75,7 +87,7 @@ export function CustomerList({ customers, initialSearch }: CustomerListProps) {
             <Input
               placeholder="Search by name, phone, or email..."
               value={search}
-              onChange={(e) => handleSearch(e.target.value)}
+              onChange={(e) => setSearch(e.target.value)}
               className="pl-10"
               data-testid="customer-search-input"
             />

@@ -1,13 +1,11 @@
-import { prisma } from '@/lib/prisma'
 import { ProductForm } from '@/components/products/product-form'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
+import { getProductCategoryOptions } from '@/lib/data'
 
 export default async function NewProductPage() {
-  const categories = await prisma.productCategory.findMany({
-    orderBy: { name: 'asc' },
-  })
+  const categories = await getProductCategoryOptions()
 
   return (
     <div className="space-y-5">

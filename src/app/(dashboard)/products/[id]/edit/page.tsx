@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { notFound } from 'next/navigation'
+import { getProductCategoryOptions } from '@/lib/data'
 
 export default async function EditProductPage({
   params,
@@ -13,13 +14,31 @@ export default async function EditProductPage({
   const [product, categories] = await Promise.all([
     prisma.product.findUnique({
       where: { id: params.id },
-      include: {
-        variants: true,
+      select: {
+        id: true,
+        name: true,
+        sku: true,
+        description: true,
+        categoryId: true,
+        sellingPrice: true,
+        costPrice: true,
+        currentStock: true,
+        lowStockAlert: true,
+        isActive: true,
+        notes: true,
+        variants: {
+          select: {
+            id: true,
+            variantType: true,
+            variantValue: true,
+            sku: true,
+            price: true,
+            stock: true,
+          },
+        },
       },
     }),
-    prisma.productCategory.findMany({
-      orderBy: { name: 'asc' },
-    }),
+    getProductCategoryOptions(),
   ])
 
   if (!product) {

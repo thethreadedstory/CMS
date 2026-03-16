@@ -59,7 +59,6 @@ export function ProductForm({ product, categories }: ProductFormProps) {
         await createProduct(formData)
       }
       router.push('/products')
-      router.refresh()
     } catch (err) {
       setError('Failed to save product. Please try again.')
       setLoading(false)

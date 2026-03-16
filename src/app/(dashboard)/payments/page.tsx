@@ -6,9 +6,24 @@ import { PaymentList } from '@/components/payments/payment-list'
 
 export default async function PaymentsPage() {
   const payments = await prisma.payment.findMany({
-    include: {
-      customer: true,
-      order: true,
+    select: {
+      id: true,
+      amount: true,
+      paymentDate: true,
+      paymentMethod: true,
+      notes: true,
+      customer: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      order: {
+        select: {
+          id: true,
+          orderNumber: true,
+        },
+      },
     },
     orderBy: { paymentDate: 'desc' },
   })

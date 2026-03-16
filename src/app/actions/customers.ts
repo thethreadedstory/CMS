@@ -1,7 +1,7 @@
 'use server'
 
 import { prisma } from '@/lib/prisma'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 
 export async function createCustomer(formData: FormData) {
   const name = formData.get('name') as string
@@ -23,6 +23,8 @@ export async function createCustomer(formData: FormData) {
   })
 
   revalidatePath('/customers')
+  revalidateTag('dashboard')
+  revalidateTag('order-form-data')
 }
 
 export async function updateCustomer(id: string, formData: FormData) {
@@ -47,6 +49,8 @@ export async function updateCustomer(id: string, formData: FormData) {
 
   revalidatePath('/customers')
   revalidatePath(`/customers/${id}`)
+  revalidateTag('dashboard')
+  revalidateTag('order-form-data')
 }
 
 export async function deleteCustomer(id: string) {
@@ -55,4 +59,6 @@ export async function deleteCustomer(id: string) {
   })
 
   revalidatePath('/customers')
+  revalidateTag('dashboard')
+  revalidateTag('order-form-data')
 }

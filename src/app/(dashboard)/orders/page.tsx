@@ -25,15 +25,23 @@ export default async function OrdersPage({
         paymentFilter ? { paymentStatus: paymentFilter as any } : {},
       ],
     },
-    include: {
-      customer: true,
-      items: {
-        include: {
-          product: true,
+    select: {
+      id: true,
+      orderNumber: true,
+      orderDate: true,
+      totalAmount: true,
+      paidAmount: true,
+      pendingAmount: true,
+      orderStatus: true,
+      paymentStatus: true,
+      customer: {
+        select: {
+          id: true,
+          name: true,
         },
       },
       _count: {
-        select: { payments: true },
+        select: { items: true },
       },
     },
     orderBy: { orderDate: 'desc' },

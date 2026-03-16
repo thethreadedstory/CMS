@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { startTransition, useEffect, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -23,8 +23,7 @@ interface Product {
   lowStockAlert: number
   isActive: boolean
   category: { id: string; name: string } | null
-  variants: any[]
-  _count: { orderItems: number }
+  _count: { variants: number }
 }
 
 interface ProductListProps {
@@ -47,12 +46,28 @@ export function ProductList({
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<{ id: string; name: string } | null>(null)
 
-  const handleFilter = (searchValue: string, categoryValue: string) => {
+  const navigateWithFilters = (searchValue: string, categoryValue: string) => {
     const params = new URLSearchParams()
     if (searchValue) params.set('search', searchValue)
     if (categoryValue) params.set('category', categoryValue)
-    router.push(`/products${params.toString() ? `?${params.toString()}` : ''}`)
+    startTransition(() => {
+      router.replace(`/products${params.toString() ? `?${params.toString()}` : ''}`, {
+        scroll: false,
+      })
+    })
   }
+
+  useEffect(() => {
+    if (search === initialSearch) {
+      return
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      navigateWithFilters(search, category)
+    }, 300)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [search, category, initialSearch])
 
   const handleDeleteClick = (id: string, name: string) => {
     setSelectedProduct({ id, name })
@@ -87,10 +102,7 @@ export function ProductList({
             <Input
               placeholder="Search by name or SKU..."
               value={search}
-              onChange={(e) => {
-                setSearch(e.target.value)
-                handleFilter(e.target.value, category)
-              }}
+              onChange={(e) => setSearch(e.target.value)}
               className="pl-10"
               data-testid="product-search-input"
             />
@@ -99,7 +111,7 @@ export function ProductList({
             value={category}
             onChange={(e) => {
               setCategory(e.target.value)
-              handleFilter(search, e.target.value)
+              navigateWithFilters(search, e.target.value)
             }}
             className="field-select sm:max-w-[220px]"
             data-testid="product-category-filter"
@@ -159,8 +171,8 @@ export function ProductList({
                           <div>
                             <p className="font-medium text-foreground">{product.name}</p>
                             <p className="text-sm text-muted-foreground">SKU: {product.sku}</p>
-                            {product.variants.length > 0 && (
-                              <p className="mt-1 text-xs uppercase tracking-[0.18em] text-muted-foreground">{product.variants.length} variant(s)</p>
+                            {product._count.variants > 0 && (
+                              <p className="mt-1 text-xs uppercase tracking-[0.18em] text-muted-foreground">{product._count.variants} variant(s)</p>
                             )}
                           </div>
                         </td>

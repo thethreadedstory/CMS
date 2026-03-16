@@ -1,7 +1,7 @@
 'use server'
 
 import { prisma } from '@/lib/prisma'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 
 export async function createOrder(formData: FormData) {
   const customerId = formData.get('customerId') as string
@@ -17,11 +17,6 @@ export async function createOrder(formData: FormData) {
   const itemsJson = formData.get('items') as string
   const items = JSON.parse(itemsJson)
 
-  // Generate order number
-  const lastOrder = await prisma.order.findFirst({
-    orderBy: { createdAt: 'desc' },
-  })
-  
   const orderCount = await prisma.order.count()
   const orderNumber = `ORD-${new Date().getFullYear()}-${String(orderCount + 1).padStart(4, '0')}`
 
@@ -52,46 +47,69 @@ export async function createOrder(formData: FormData) {
   })
 
   revalidatePath('/orders')
+  revalidatePath('/customers')
+  revalidatePath(`/customers/${customerId}`)
   revalidatePath('/dashboard')
+  revalidateTag('dashboard')
 }
 
 export async function updateOrderStatus(orderId: string, status: string) {
-  await prisma.order.update({
-    where: { id: orderId },
-    data: {
-      orderStatus: status as any,
-    },
-  })
-
-  // If order is delivered, deduct stock
-  if (status === 'DELIVERED') {
-    const order = await prisma.order.findUnique({
+  const result = await prisma.$transaction(async (tx) => {
+    const updatedOrder = await tx.order.update({
       where: { id: orderId },
-      include: { items: true },
+      data: {
+        orderStatus: status as any,
+      },
+      select: {
+        customerId: true,
+      },
     })
 
-    if (order) {
-      for (const item of order.items) {
-        if (item.variantId) {
-          // Deduct from variant stock
-          await prisma.productVariant.update({
-            where: { id: item.variantId },
-            data: { stock: { decrement: item.quantity } },
-          })
-        } else {
-          // Deduct from product stock
-          await prisma.product.update({
-            where: { id: item.productId },
-            data: { currentStock: { decrement: item.quantity } },
-          })
-        }
-      }
+    if (status !== 'DELIVERED') {
+      return updatedOrder
     }
-  }
+
+    const order = await tx.order.findUnique({
+      where: { id: orderId },
+      select: {
+        items: {
+          select: {
+            productId: true,
+            variantId: true,
+            quantity: true,
+          },
+        },
+      },
+    })
+
+    if (!order) {
+      return updatedOrder
+    }
+
+    await Promise.all(
+      order.items.map((item) =>
+        item.variantId
+          ? tx.productVariant.update({
+              where: { id: item.variantId },
+              data: { stock: { decrement: item.quantity } },
+            })
+          : tx.product.update({
+              where: { id: item.productId },
+              data: { currentStock: { decrement: item.quantity } },
+          })
+      )
+    )
+
+    return updatedOrder
+  })
 
   revalidatePath('/orders')
   revalidatePath(`/orders/${orderId}`)
+  revalidatePath('/customers')
+  revalidatePath(`/customers/${result.customerId}`)
+  revalidatePath('/products')
   revalidatePath('/dashboard')
+  revalidateTag('dashboard')
 }
 
 export async function updateOrder(orderId: string, formData: FormData) {
@@ -108,44 +126,60 @@ export async function updateOrder(orderId: string, formData: FormData) {
   const itemsJson = formData.get('items') as string
   const items = JSON.parse(itemsJson)
 
-  // Delete existing items and recreate
-  await prisma.orderItem.deleteMany({ where: { orderId } })
+  await prisma.$transaction(async (tx) => {
+    await tx.orderItem.deleteMany({ where: { orderId } })
 
-  await prisma.order.update({
-    where: { id: orderId },
-    data: {
-      customerId,
-      orderDate,
-      subtotal,
-      discount,
-      shippingCharge,
-      totalAmount,
-      paidAmount,
-      pendingAmount,
-      paymentStatus: paymentStatus as any,
-      notes: notes || null,
-      items: {
-        create: items.map((item: any) => ({
-          productId: item.productId,
-          variantId: item.variantId || null,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          total: item.quantity * item.unitPrice,
-        })),
+    await tx.order.update({
+      where: { id: orderId },
+      data: {
+        customerId,
+        orderDate,
+        subtotal,
+        discount,
+        shippingCharge,
+        totalAmount,
+        paidAmount,
+        pendingAmount,
+        paymentStatus: paymentStatus as any,
+        notes: notes || null,
+        items: {
+          create: items.map((item: any) => ({
+            productId: item.productId,
+            variantId: item.variantId || null,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            total: item.quantity * item.unitPrice,
+          })),
+        },
       },
-    },
+    })
   })
 
   revalidatePath('/orders')
   revalidatePath(`/orders/${orderId}`)
+  revalidatePath('/customers')
+  revalidatePath(`/customers/${customerId}`)
   revalidatePath('/dashboard')
+  revalidateTag('dashboard')
 }
 
 export async function deleteOrder(orderId: string) {
+  const existingOrder = await prisma.order.findUnique({
+    where: { id: orderId },
+    select: {
+      customerId: true,
+    },
+  })
+
   await prisma.order.delete({
     where: { id: orderId },
   })
 
   revalidatePath('/orders')
+  revalidatePath('/customers')
+  if (existingOrder) {
+    revalidatePath(`/customers/${existingOrder.customerId}`)
+  }
   revalidatePath('/dashboard')
+  revalidateTag('dashboard')
 }

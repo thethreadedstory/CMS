@@ -202,7 +202,6 @@ export function EditOrderForm({ orderId, customers, products, initialData }: Edi
 
       await updateOrder(orderId, formData)
       router.push(`/orders/${orderId}`)
-      router.refresh()
     } catch {
       setError('Failed to update order. Please try again.')
       setLoading(false)

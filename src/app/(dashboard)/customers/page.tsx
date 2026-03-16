@@ -22,24 +22,42 @@ export default async function CustomersPage({
         }
       : undefined,
     orderBy: { createdAt: 'desc' },
-    include: {
-      _count: {
-        select: { orders: true },
-      },
-      orders: {
-        select: {
-          totalAmount: true,
-          pendingAmount: true,
-        },
-      },
+    select: {
+      id: true,
+      name: true,
+      phone: true,
+      email: true,
+      city: true,
     },
   })
 
+  const orderStats = customers.length
+    ? await prisma.order.groupBy({
+        by: ['customerId'],
+        where: {
+          customerId: {
+            in: customers.map((customer) => customer.id),
+          },
+        },
+        _sum: {
+          totalAmount: true,
+          pendingAmount: true,
+        },
+        _count: {
+          _all: true,
+        },
+      })
+    : []
+
+  const statsByCustomer = new Map(
+    orderStats.map((stat) => [stat.customerId, stat])
+  )
+
   const customersWithStats = customers.map((customer) => ({
     ...customer,
-    totalSpent: customer.orders.reduce((sum, order) => sum + order.totalAmount, 0),
-    pendingAmount: customer.orders.reduce((sum, order) => sum + order.pendingAmount, 0),
-    orderCount: customer._count.orders,
+    totalSpent: statsByCustomer.get(customer.id)?._sum.totalAmount || 0,
+    pendingAmount: statsByCustomer.get(customer.id)?._sum.pendingAmount || 0,
+    orderCount: statsByCustomer.get(customer.id)?._count._all || 0,
   }))
 
   return (
