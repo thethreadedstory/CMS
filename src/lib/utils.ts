@@ -6,11 +6,10 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
+  const formatted = new Intl.NumberFormat('en-IN', {
     minimumFractionDigits: 0,
   }).format(amount)
+  return `Rs ${formatted}`
 }
 
 export function formatDate(date: Date | string): string {
