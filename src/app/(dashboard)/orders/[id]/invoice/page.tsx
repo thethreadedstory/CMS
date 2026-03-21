@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { InvoiceAutoPrint } from '@/components/orders/invoice-auto-print'
 import { OrderInvoice } from '@/components/orders/order-invoice'
 import { prisma } from '@/lib/prisma'
+import { getEffectiveOrderDueDate } from '@/lib/utils'
 
 export default async function OrderInvoicePage({
   params,
@@ -28,6 +29,7 @@ export default async function OrderInvoicePage({
   }
 
   const documentTitle = `Invoice-${order.orderNumber || order.id}`
+  const effectiveDueDate = getEffectiveOrderDueDate(order)
 
   return (
     <div className="invoice-print-mode">
@@ -35,7 +37,12 @@ export default async function OrderInvoicePage({
         enabled={searchParams.autoprint === '1'}
         documentTitle={documentTitle}
       />
-      <OrderInvoice order={order} />
+      <OrderInvoice
+        order={{
+          ...order,
+          dueDate: effectiveDueDate,
+        }}
+      />
     </div>
   )
 }

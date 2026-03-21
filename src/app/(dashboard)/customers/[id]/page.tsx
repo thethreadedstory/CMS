@@ -64,6 +64,7 @@ export default async function CustomerDetailPage({
     IN_PROGRESS: 'bg-purple-100 text-purple-800',
     READY: 'bg-cyan-100 text-cyan-900',
     SHIPPED: 'bg-indigo-100 text-indigo-900',
+    PARTIALLY_DELIVERED: 'bg-amber-100 text-amber-900',
     DELIVERED: 'bg-green-100 text-green-800',
     CANCELLED: 'bg-red-100 text-red-800',
   }

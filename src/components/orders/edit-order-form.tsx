@@ -61,6 +61,7 @@ interface EditOrderFormProps {
   initialData: {
     customerId: string
     orderDate: string
+    dueDate: string
     subtotal: number
     discount: number
     shippingCharge: number
@@ -80,6 +81,7 @@ export function EditOrderForm({ orderId, customers, products, initialData }: Edi
 
   const [customerId, setCustomerId] = useState(initialData.customerId)
   const [orderDate, setOrderDate] = useState(initialData.orderDate)
+  const [dueDate, setDueDate] = useState(initialData.dueDate)
   const [items, setItems] = useState<OrderItem[]>(
     initialData.items.map((item) => ({
       productId: item.productId,
@@ -192,6 +194,7 @@ export function EditOrderForm({ orderId, customers, products, initialData }: Edi
       const formData = new FormData()
       formData.append('customerId', customerId)
       formData.append('orderDate', orderDate)
+      formData.append('dueDate', dueDate)
       formData.append('subtotal', subtotal.toString())
       formData.append('discount', discount.toString())
       formData.append('shippingCharge', shippingCharge.toString())
@@ -223,7 +226,7 @@ export function EditOrderForm({ orderId, customers, products, initialData }: Edi
           <CardTitle>Customer & Date</CardTitle>
         </CardHeader>
         <CardContent className="pt-0 space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="space-y-2">
               <Label htmlFor="customerId">
                 Customer <span className="text-red-500">*</span>
@@ -249,6 +252,16 @@ export function EditOrderForm({ orderId, customers, products, initialData }: Edi
                 type="date"
                 value={orderDate}
                 onChange={(e) => setOrderDate(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="dueDate">Due Date</Label>
+              <Input
+                id="dueDate"
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
               />
             </div>
           </div>

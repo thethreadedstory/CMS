@@ -57,6 +57,7 @@ export function OrderForm({ customers, products }: OrderFormProps) {
   
   const [customerId, setCustomerId] = useState('')
   const [orderDate, setOrderDate] = useState(new Date().toISOString().split('T')[0])
+  const [dueDate, setDueDate] = useState('')
   const [items, setItems] = useState<OrderItem[]>([])
   const [discount, setDiscount] = useState(0)
   const [shippingCharge, setShippingCharge] = useState(0)
@@ -168,6 +169,7 @@ export function OrderForm({ customers, products }: OrderFormProps) {
       const formData = new FormData()
       formData.append('customerId', customerId)
       formData.append('orderDate', orderDate)
+      formData.append('dueDate', dueDate)
       formData.append('subtotal', subtotal.toString())
       formData.append('discount', discount.toString())
       formData.append('shippingCharge', shippingCharge.toString())
@@ -199,7 +201,7 @@ export function OrderForm({ customers, products }: OrderFormProps) {
           <CardTitle>Customer & Date</CardTitle>
         </CardHeader>
         <CardContent className="pt-0 space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="space-y-2">
               <Label htmlFor="customerId">
                 Customer <span className="text-red-500">*</span>
@@ -227,6 +229,17 @@ export function OrderForm({ customers, products }: OrderFormProps) {
                 value={orderDate}
                 onChange={(e) => setOrderDate(e.target.value)}
                 data-testid="order-date-input"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="dueDate">Due Date</Label>
+              <Input
+                id="dueDate"
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                data-testid="order-due-date-input"
               />
             </div>
           </div>

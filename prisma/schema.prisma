@@ -100,6 +100,7 @@ enum OrderStatus {
   IN_PROGRESS
   READY
   SHIPPED
+  PARTIALLY_DELIVERED
   DELIVERED
   CANCELLED
 }
@@ -120,6 +121,7 @@ model Order {
   orderDate       DateTime      @default(now())
   dueDate         DateTime?
   deliveryDate    DateTime?
+  deliveredQuantity Int         @default(0)
   subtotal        Float
   discount        Float         @default(0)
   shippingCharge  Float         @default(0)

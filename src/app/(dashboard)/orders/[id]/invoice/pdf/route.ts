@@ -10,7 +10,7 @@ import {
 } from '@react-pdf/renderer'
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { formatCurrency, formatDate, getEffectiveOrderDueDate } from '@/lib/utils'
 
 Font.register({
   family: 'Helvetica',
@@ -231,6 +231,7 @@ export async function GET(
   }
 
   const documentTitle = `invoice-${order.orderNumber || order.id}`
+  const effectiveDueDate = getEffectiveOrderDueDate(order)
 
   const invoiceRows = [
     { label: 'Subtotal', value: formatCurrency(order.subtotal) },
@@ -275,11 +276,11 @@ export async function GET(
               { style: styles.metaText },
               `Order Date: ${formatDate(order.orderDate)}`
             ),
-            order.dueDate
+            effectiveDueDate
               ? React.createElement(
                   Text,
                   { style: styles.metaText },
-                  `Due Date: ${formatDate(order.dueDate)}`
+                  `Due Date: ${formatDate(effectiveDueDate)}`
                 )
               : null
           ),

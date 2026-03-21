@@ -3,9 +3,23 @@
 import { prisma } from '@/lib/prisma'
 import { revalidatePath, revalidateTag } from 'next/cache'
 
+type UpdateOrderStatusInput = {
+  status: string
+  deliveredQuantity?: number
+}
+
+function parseOptionalDate(value: FormDataEntryValue | null) {
+  if (typeof value !== 'string' || !value) {
+    return null
+  }
+
+  return new Date(value)
+}
+
 export async function createOrder(formData: FormData) {
   const customerId = formData.get('customerId') as string
   const orderDate = new Date(formData.get('orderDate') as string)
+  const dueDate = parseOptionalDate(formData.get('dueDate'))
   const subtotal = parseFloat(formData.get('subtotal') as string)
   const discount = parseFloat(formData.get('discount') as string)
   const shippingCharge = parseFloat(formData.get('shippingCharge') as string)
@@ -25,6 +39,7 @@ export async function createOrder(formData: FormData) {
       orderNumber,
       customerId,
       orderDate,
+      dueDate,
       subtotal,
       discount,
       shippingCharge,
@@ -56,25 +71,23 @@ export async function createOrder(formData: FormData) {
   revalidateTag('dashboard')
 }
 
-export async function updateOrderStatus(orderId: string, status: string) {
+export async function updateOrderStatus(
+  orderId: string,
+  input: string | UpdateOrderStatusInput
+) {
+  const payload =
+    typeof input === 'string'
+      ? { status: input, deliveredQuantity: undefined }
+      : input
+
   const result = await prisma.$transaction(async (tx) => {
-    const updatedOrder = await tx.order.update({
-      where: { id: orderId },
-      data: {
-        orderStatus: status as any,
-      },
-      select: {
-        customerId: true,
-      },
-    })
-
-    if (status !== 'DELIVERED') {
-      return updatedOrder
-    }
-
     const order = await tx.order.findUnique({
       where: { id: orderId },
       select: {
+        customerId: true,
+        orderStatus: true,
+        dueDate: true,
+        deliveredQuantity: true,
         items: {
           select: {
             productId: true,
@@ -86,24 +99,80 @@ export async function updateOrderStatus(orderId: string, status: string) {
     })
 
     if (!order) {
-      return updatedOrder
+      throw new Error('Order not found')
     }
 
-    await Promise.all(
-      order.items.map((item) =>
-        item.variantId
-          ? tx.productVariant.update({
-              where: { id: item.variantId },
-              data: { stock: { decrement: item.quantity } },
-            })
-          : tx.product.update({
-              where: { id: item.productId },
-              data: { currentStock: { decrement: item.quantity } },
-          })
-      )
-    )
+    const totalOrderedQuantity = order.items.reduce((sum, item) => sum + item.quantity, 0)
+    const currentDeliveredQuantity = order.deliveredQuantity
+    let nextDeliveredQuantity = currentDeliveredQuantity
+    let nextDeliveryDate: Date | null = null
+    let nextDueDate: Date | null | undefined
+    const keepsDeliveredProgress =
+      payload.status === 'PARTIALLY_DELIVERED' || payload.status === 'DELIVERED'
 
-    return updatedOrder
+    if (!keepsDeliveredProgress && currentDeliveredQuantity < totalOrderedQuantity) {
+      nextDeliveredQuantity = 0
+    }
+
+    if (payload.status === 'PARTIALLY_DELIVERED') {
+      const deliveredQuantity = payload.deliveredQuantity
+
+      if (!Number.isInteger(deliveredQuantity) || deliveredQuantity === undefined) {
+        throw new Error('Please enter a valid delivered quantity')
+      }
+
+      if (deliveredQuantity <= 0) {
+        throw new Error('Delivered quantity must be greater than zero')
+      }
+
+      if (deliveredQuantity >= totalOrderedQuantity) {
+        throw new Error('Use delivered status when the full order quantity is delivered')
+      }
+
+      if (deliveredQuantity < currentDeliveredQuantity) {
+        throw new Error('Delivered quantity cannot be less than the quantity already recorded')
+      }
+
+      nextDeliveredQuantity = deliveredQuantity
+    }
+
+    if (payload.status === 'DELIVERED') {
+      nextDeliveredQuantity = totalOrderedQuantity
+      nextDeliveryDate = new Date()
+      nextDueDate = order.dueDate ?? nextDeliveryDate
+    }
+
+    const shouldDecrementInventory =
+      payload.status === 'DELIVERED' && currentDeliveredQuantity < totalOrderedQuantity
+
+    if (shouldDecrementInventory) {
+      await Promise.all(
+        order.items.map((item) =>
+          item.variantId
+            ? tx.productVariant.update({
+                where: { id: item.variantId },
+                data: { stock: { decrement: item.quantity } },
+              })
+            : tx.product.update({
+                where: { id: item.productId },
+                data: { currentStock: { decrement: item.quantity } },
+              })
+        )
+      )
+    }
+
+    return tx.order.update({
+      where: { id: orderId },
+      data: {
+        orderStatus: payload.status as any,
+        deliveredQuantity: nextDeliveredQuantity,
+        deliveryDate: nextDeliveryDate,
+        ...(nextDueDate !== undefined ? { dueDate: nextDueDate } : {}),
+      },
+      select: {
+        customerId: true,
+      },
+    })
   })
 
   revalidatePath('/orders')
@@ -121,6 +190,7 @@ export async function updateOrderStatus(orderId: string, status: string) {
 export async function updateOrder(orderId: string, formData: FormData) {
   const customerId = formData.get('customerId') as string
   const orderDate = new Date(formData.get('orderDate') as string)
+  const dueDate = parseOptionalDate(formData.get('dueDate'))
   const subtotal = parseFloat(formData.get('subtotal') as string)
   const discount = parseFloat(formData.get('discount') as string)
   const shippingCharge = parseFloat(formData.get('shippingCharge') as string)
@@ -140,6 +210,7 @@ export async function updateOrder(orderId: string, formData: FormData) {
       data: {
         customerId,
         orderDate,
+        dueDate,
         subtotal,
         discount,
         shippingCharge,

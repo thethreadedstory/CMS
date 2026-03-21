@@ -46,6 +46,9 @@ export const getDashboardData = unstable_cache(
           orderStatus: true,
           paymentStatus: true,
           orderDate: true,
+          dueDate: true,
+          deliveryDate: true,
+          updatedAt: true,
           customer: {
             select: {
               name: true,

@@ -19,6 +19,7 @@ export default async function EditOrderPage({
         orderNumber: true,
         customerId: true,
         orderDate: true,
+        dueDate: true,
         subtotal: true,
         discount: true,
         shippingCharge: true,
@@ -49,6 +50,7 @@ export default async function EditOrderPage({
   const initialData = {
     customerId: order.customerId,
     orderDate: order.orderDate.toISOString().split('T')[0],
+    dueDate: order.dueDate ? order.dueDate.toISOString().split('T')[0] : '',
     subtotal: order.subtotal,
     discount: order.discount,
     shippingCharge: order.shippingCharge,

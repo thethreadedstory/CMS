@@ -8,7 +8,12 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { prisma } from '@/lib/prisma'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import {
+  formatCurrency,
+  formatDate,
+  getEffectiveDeliveryDate,
+  getEffectiveOrderDueDate,
+} from '@/lib/utils'
 
 export default async function OrderDetailPage({
   params,
@@ -57,6 +62,7 @@ export default async function OrderDetailPage({
     IN_PROGRESS: 'bg-purple-100 text-purple-800',
     READY: 'bg-cyan-100 text-cyan-900',
     SHIPPED: 'bg-indigo-100 text-indigo-900',
+    PARTIALLY_DELIVERED: 'bg-amber-100 text-amber-900',
     DELIVERED: 'bg-green-100 text-green-800',
     CANCELLED: 'bg-red-100 text-red-800',
   }
@@ -72,6 +78,9 @@ export default async function OrderDetailPage({
     (sum, purchase) => sum + purchase.totalAmount,
     0
   )
+  const totalOrderedQuantity = order.items.reduce((sum, item) => sum + item.quantity, 0)
+  const effectiveDueDate = getEffectiveOrderDueDate(order)
+  const effectiveDeliveryDate = getEffectiveDeliveryDate(order)
   const estimatedNetProfit = order.totalAmount - rawMaterialSpend
   return (
     <div className="space-y-6">
@@ -88,7 +97,10 @@ export default async function OrderDetailPage({
       <div className="flex items-start justify-between">
         <div>
           <h1 className="page-title">{order.orderNumber}</h1>
-          <p className="page-copy">{formatDate(order.orderDate)}</p>
+          <p className="page-copy">
+            Ordered on {formatDate(order.orderDate)}
+            {effectiveDueDate ? ` • Due by ${formatDate(effectiveDueDate)}` : ''}
+          </p>
         </div>
         <div className="flex gap-2">
           <Badge className={statusColors[order.orderStatus]}>
@@ -221,7 +233,46 @@ export default async function OrderDetailPage({
             </CardContent>
           </Card>
 
-          <OrderStatusManager orderId={order.id} currentStatus={order.orderStatus} />
+          <Card>
+            <CardHeader>
+              <CardTitle>Fulfillment</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 pt-0">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Ordered quantity</span>
+                <span className="font-medium text-foreground">{totalOrderedQuantity}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Delivered quantity</span>
+                <span className="font-medium text-foreground">
+                  {order.deliveredQuantity} / {totalOrderedQuantity}
+                </span>
+              </div>
+              {effectiveDueDate ? (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Due date</span>
+                  <span className="font-medium text-foreground">
+                    {formatDate(effectiveDueDate)}
+                  </span>
+                </div>
+              ) : null}
+              {effectiveDeliveryDate ? (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Delivered on</span>
+                  <span className="font-medium text-foreground">
+                    {formatDate(effectiveDeliveryDate)}
+                  </span>
+                </div>
+              ) : null}
+            </CardContent>
+          </Card>
+
+          <OrderStatusManager
+            orderId={order.id}
+            currentStatus={order.orderStatus}
+            deliveredQuantity={order.deliveredQuantity}
+            totalOrderedQuantity={totalOrderedQuantity}
+          />
 
           <Card>
             <CardHeader>
@@ -332,7 +383,14 @@ export default async function OrderDetailPage({
         </div>
       </div>
 
-      <OrderInvoice order={order} rootId="invoice-print-root" ariaHidden />
+      <OrderInvoice
+        order={{
+          ...order,
+          dueDate: effectiveDueDate,
+        }}
+        rootId="invoice-print-root"
+        ariaHidden
+      />
     </div>
   )
 }

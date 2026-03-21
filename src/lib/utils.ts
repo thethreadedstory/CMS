@@ -30,6 +30,33 @@ export function formatDateTime(date: Date | string): string {
   }).format(new Date(date))
 }
 
+type OrderDateSource = {
+  dueDate?: Date | string | null
+  deliveryDate?: Date | string | null
+  updatedAt?: Date | string | null
+  orderStatus?: string | null
+}
+
+export function getEffectiveOrderDueDate(order: OrderDateSource): Date | string | null {
+  if (order.dueDate) {
+    return order.dueDate
+  }
+
+  if (order.orderStatus === 'DELIVERED') {
+    return order.deliveryDate ?? order.updatedAt ?? null
+  }
+
+  return null
+}
+
+export function getEffectiveDeliveryDate(order: OrderDateSource): Date | string | null {
+  if (order.orderStatus !== 'DELIVERED') {
+    return null
+  }
+
+  return order.deliveryDate ?? order.updatedAt ?? null
+}
+
 export function generateSkuFromName(name: string): string {
   return name.trim().toLowerCase().replace(/\s+/g, '-')
 }

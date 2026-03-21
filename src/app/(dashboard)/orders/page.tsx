@@ -17,7 +17,7 @@ export default async function OrdersPage({
   const statusFilter = searchParams.status || ''
   const paymentFilter = searchParams.payment || ''
 
-  const orders = await prisma.order.findMany({
+  const rawOrders = await prisma.order.findMany({
     where: {
       AND: [
         search ? { orderNumber: { contains: search, mode: 'insensitive' } } : {},
@@ -29,11 +29,20 @@ export default async function OrdersPage({
       id: true,
       orderNumber: true,
       orderDate: true,
+      dueDate: true,
+      deliveryDate: true,
+      deliveredQuantity: true,
+      updatedAt: true,
       totalAmount: true,
       paidAmount: true,
       pendingAmount: true,
       orderStatus: true,
       paymentStatus: true,
+      items: {
+        select: {
+          quantity: true,
+        },
+      },
       customer: {
         select: {
           id: true,
@@ -46,6 +55,11 @@ export default async function OrdersPage({
     },
     orderBy: { orderDate: 'desc' },
   })
+
+  const orders = rawOrders.map((order) => ({
+    ...order,
+    totalOrderedQuantity: order.items.reduce((sum, item) => sum + item.quantity, 0),
+  }))
 
   return (
     <div className="space-y-6">

@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { OrderInvoiceActionButton } from '@/components/orders/order-invoice-action-button'
 import { SelectField } from '@/components/ui/select-field'
 import { ActionIconButton, ActionIconLink } from '@/components/ui/action-icon-button'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { formatCurrency, formatDate, getEffectiveOrderDueDate } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 import { Search, Eye, Edit, Trash2 } from 'lucide-react'
 import { deleteOrder } from '@/app/actions/orders'
@@ -19,6 +19,11 @@ interface Order {
   id: string
   orderNumber: string
   orderDate: Date
+  dueDate: Date | null
+  deliveryDate: Date | null
+  updatedAt: Date
+  deliveredQuantity: number
+  totalOrderedQuantity: number
   totalAmount: number
   paidAmount: number
   pendingAmount: number
@@ -46,6 +51,7 @@ const statusColors: Record<string, string> = {
   IN_PROGRESS: 'border-violet-200 bg-violet-100/80 text-violet-900',
   READY: 'border-cyan-200 bg-cyan-100/80 text-cyan-900',
   SHIPPED: 'border-indigo-200 bg-indigo-100/80 text-indigo-900',
+  PARTIALLY_DELIVERED: 'border-amber-200 bg-amber-100/80 text-amber-900',
   DELIVERED: 'border-emerald-200 bg-emerald-100/80 text-emerald-900',
   CANCELLED: 'border-rose-200 bg-rose-100/80 text-rose-900',
 }
@@ -147,6 +153,7 @@ export function OrderList({
             { value: 'IN_PROGRESS', label: 'In Progress' },
             { value: 'READY', label: 'Ready' },
             { value: 'SHIPPED', label: 'Shipped' },
+            { value: 'PARTIALLY_DELIVERED', label: 'Partially Delivered' },
             { value: 'DELIVERED', label: 'Delivered' },
             { value: 'CANCELLED', label: 'Cancelled' },
           ]}
@@ -188,7 +195,8 @@ export function OrderList({
                 <TableRow>
                   <TableHead>Order</TableHead>
                   <TableHead>Customer</TableHead>
-                  <TableHead>Date</TableHead>
+                  <TableHead>Order Date</TableHead>
+                  <TableHead>Due Date</TableHead>
                   <TableHead>Amount</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-center">Actions</TableHead>
@@ -207,6 +215,11 @@ export function OrderList({
                     <TableCell className="text-sm text-muted-foreground">
                       {formatDate(order.orderDate)}
                     </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {getEffectiveOrderDueDate(order)
+                        ? formatDate(getEffectiveOrderDueDate(order)!)
+                        : '-'}
+                    </TableCell>
                     <TableCell>
                       <div className="text-sm">
                         <p className="font-semibold text-foreground">{formatCurrency(order.totalAmount)}</p>
@@ -221,6 +234,11 @@ export function OrderList({
                         <Badge className={statusColors[order.orderStatus]}>
                           {order.orderStatus.replace('_', ' ')}
                         </Badge>
+                        {order.deliveredQuantity > 0 ? (
+                          <p className="text-xs text-muted-foreground">
+                            Delivered: {order.deliveredQuantity} / {order.totalOrderedQuantity}
+                          </p>
+                        ) : null}
                         <Badge className={paymentColors[order.paymentStatus]}>
                           {order.paymentStatus.replace('_', ' ')}
                         </Badge>
