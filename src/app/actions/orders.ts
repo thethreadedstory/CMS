@@ -5,7 +5,7 @@ import { revalidatePath, revalidateTag } from 'next/cache'
 
 type UpdateOrderStatusInput = {
   status: string
-  deliveredQuantity?: number
+  itemDeliveredQuantities?: { itemId: string; deliveredQuantity: number }[]
 }
 
 function parseOptionalDate(value: FormDataEntryValue | null) {
@@ -75,9 +75,9 @@ export async function updateOrderStatus(
   orderId: string,
   input: string | UpdateOrderStatusInput
 ) {
-  const payload =
+  const payload: UpdateOrderStatusInput =
     typeof input === 'string'
-      ? { status: input, deliveredQuantity: undefined }
+      ? { status: input }
       : input
 
   const result = await prisma.$transaction(async (tx) => {
@@ -90,9 +90,11 @@ export async function updateOrderStatus(
         deliveredQuantity: true,
         items: {
           select: {
+            id: true,
             productId: true,
             variantId: true,
             quantity: true,
+            deliveredQuantity: true,
           },
         },
       },
@@ -110,53 +112,74 @@ export async function updateOrderStatus(
     const keepsDeliveredProgress =
       payload.status === 'PARTIALLY_DELIVERED' || payload.status === 'DELIVERED'
 
-    if (!keepsDeliveredProgress && currentDeliveredQuantity < totalOrderedQuantity) {
+    if (!keepsDeliveredProgress && currentDeliveredQuantity > 0) {
       nextDeliveredQuantity = 0
+      await Promise.all(
+        order.items.map((item) =>
+          tx.orderItem.update({ where: { id: item.id }, data: { deliveredQuantity: 0 } })
+        )
+      )
     }
 
     if (payload.status === 'PARTIALLY_DELIVERED') {
-      const deliveredQuantity = payload.deliveredQuantity
+      const itemDeliveredQuantities = payload.itemDeliveredQuantities
 
-      if (!Number.isInteger(deliveredQuantity) || deliveredQuantity === undefined) {
-        throw new Error('Please enter a valid delivered quantity')
+      if (!itemDeliveredQuantities || itemDeliveredQuantities.length === 0) {
+        throw new Error('Please enter delivered quantities for each item')
       }
 
-      if (deliveredQuantity <= 0) {
-        throw new Error('Delivered quantity must be greater than zero')
+      const itemMap = new Map(order.items.map((item) => [item.id, item]))
+      let totalDelivered = 0
+
+      for (const { itemId, deliveredQuantity } of itemDeliveredQuantities) {
+        const orderItem = itemMap.get(itemId)
+        if (!orderItem) {
+          throw new Error('Invalid item reference')
+        }
+
+        if (!Number.isInteger(deliveredQuantity) || deliveredQuantity < 0) {
+          throw new Error('Please enter a valid delivered quantity for each item')
+        }
+
+        if (deliveredQuantity > orderItem.quantity) {
+          throw new Error('Delivered quantity cannot exceed ordered quantity for an item')
+        }
+
+        if (deliveredQuantity < orderItem.deliveredQuantity) {
+          throw new Error('Delivered quantity cannot be less than already recorded quantity')
+        }
+
+        totalDelivered += deliveredQuantity
       }
 
-      if (deliveredQuantity >= totalOrderedQuantity) {
+      if (totalDelivered === 0) {
+        throw new Error('At least one item must have a delivered quantity greater than zero')
+      }
+
+      if (totalDelivered >= totalOrderedQuantity) {
         throw new Error('Use delivered status when the full order quantity is delivered')
       }
 
-      if (deliveredQuantity < currentDeliveredQuantity) {
-        throw new Error('Delivered quantity cannot be less than the quantity already recorded')
-      }
+      nextDeliveredQuantity = totalDelivered
 
-      nextDeliveredQuantity = deliveredQuantity
+      await Promise.all(
+        itemDeliveredQuantities.map(({ itemId, deliveredQuantity }) =>
+          tx.orderItem.update({ where: { id: itemId }, data: { deliveredQuantity } })
+        )
+      )
     }
 
     if (payload.status === 'DELIVERED') {
       nextDeliveredQuantity = totalOrderedQuantity
       nextDeliveryDate = new Date()
       nextDueDate = order.dueDate ?? nextDeliveryDate
-    }
 
-    const shouldDecrementInventory =
-      payload.status === 'DELIVERED' && currentDeliveredQuantity < totalOrderedQuantity
-
-    if (shouldDecrementInventory) {
       await Promise.all(
         order.items.map((item) =>
-          item.variantId
-            ? tx.productVariant.update({
-                where: { id: item.variantId },
-                data: { stock: { decrement: item.quantity } },
-              })
-            : tx.product.update({
-                where: { id: item.productId },
-                data: { currentStock: { decrement: item.quantity } },
-              })
+          tx.orderItem.update({
+            where: { id: item.id },
+            data: { deliveredQuantity: item.quantity },
+          })
         )
       )
     }

@@ -20,11 +20,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
+interface OrderItem {
+  id: string
+  productName: string
+  variantLabel?: string | null
+  quantity: number
+  deliveredQuantity: number
+}
+
 interface OrderStatusManagerProps {
   orderId: string
   currentStatus: string
   deliveredQuantity: number
   totalOrderedQuantity: number
+  items: OrderItem[]
 }
 
 const statuses = [
@@ -43,19 +52,24 @@ export function OrderStatusManager({
   currentStatus,
   deliveredQuantity,
   totalOrderedQuantity,
+  items,
 }: OrderStatusManagerProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [pendingStatus, setPendingStatus] = useState<{ value: string; label: string } | null>(null)
-  const [deliveredQuantityInput, setDeliveredQuantityInput] = useState(
-    deliveredQuantity > 0 ? String(deliveredQuantity) : ''
-  )
+  const [itemQuantityInputs, setItemQuantityInputs] = useState<Record<string, string>>({})
   const [validationError, setValidationError] = useState('')
 
   const handleStatusClick = (status: { value: string; label: string }) => {
     setPendingStatus(status)
-    setDeliveredQuantityInput(deliveredQuantity > 0 ? String(deliveredQuantity) : '')
+    if (status.value === 'PARTIALLY_DELIVERED') {
+      const initial: Record<string, string> = {}
+      items.forEach((item) => {
+        initial[item.id] = item.deliveredQuantity > 0 ? String(item.deliveredQuantity) : ''
+      })
+      setItemQuantityInputs(initial)
+    }
     setValidationError('')
     setConfirmOpen(true)
   }
@@ -65,27 +79,50 @@ export function OrderStatusManager({
       return
     }
 
-    let nextDeliveredQuantity: number | undefined
+    let itemDeliveredQuantities: { itemId: string; deliveredQuantity: number }[] | undefined
 
     if (pendingStatus.value === 'PARTIALLY_DELIVERED') {
-      const parsedQuantity = Number(deliveredQuantityInput)
+      const validated: { itemId: string; deliveredQuantity: number }[] = []
 
-      if (!Number.isInteger(parsedQuantity)) {
-        setValidationError('Enter a whole delivered quantity.')
+      for (const item of items) {
+        const inputVal = itemQuantityInputs[item.id] ?? ''
+        const parsed = inputVal === '' ? 0 : Number(inputVal)
+
+        if (!Number.isInteger(parsed) || parsed < 0) {
+          setValidationError(`Enter a valid delivered quantity for "${item.productName}".`)
+          return
+        }
+
+        if (parsed > item.quantity) {
+          setValidationError(
+            `Delivered quantity for "${item.productName}" cannot exceed ordered quantity (${item.quantity}).`
+          )
+          return
+        }
+
+        if (parsed < item.deliveredQuantity) {
+          setValidationError(
+            `Delivered quantity for "${item.productName}" cannot be less than already recorded (${item.deliveredQuantity}).`
+          )
+          return
+        }
+
+        validated.push({ itemId: item.id, deliveredQuantity: parsed })
+      }
+
+      const totalDelivered = validated.reduce((sum, i) => sum + i.deliveredQuantity, 0)
+
+      if (totalDelivered === 0) {
+        setValidationError('At least one item must have a delivered quantity greater than zero.')
         return
       }
 
-      if (parsedQuantity <= 0) {
-        setValidationError('Delivered quantity must be greater than zero.')
+      if (totalDelivered >= totalOrderedQuantity) {
+        setValidationError('Use "Delivered" status when the full order quantity has been completed.')
         return
       }
 
-      if (parsedQuantity >= totalOrderedQuantity) {
-        setValidationError('Use delivered when the full order quantity has been completed.')
-        return
-      }
-
-      nextDeliveredQuantity = parsedQuantity
+      itemDeliveredQuantities = validated
     }
 
     setLoading(true)
@@ -94,7 +131,7 @@ export function OrderStatusManager({
     try {
       await updateOrderStatus(orderId, {
         status: pendingStatus.value,
-        deliveredQuantity: nextDeliveredQuantity,
+        itemDeliveredQuantities,
       })
       toast.success(`Order status updated to ${pendingStatus.label}`)
       setConfirmOpen(false)
@@ -178,22 +215,36 @@ export function OrderStatusManager({
           </AlertDialogHeader>
 
           {pendingStatus?.value === 'PARTIALLY_DELIVERED' ? (
-            <div className="space-y-2">
-              <Label htmlFor="deliveredQuantity">Delivered Quantity So Far</Label>
-              <Input
-                id="deliveredQuantity"
-                type="number"
-                min={Math.max(1, deliveredQuantity)}
-                max={Math.max(1, totalOrderedQuantity - 1)}
-                step="1"
-                value={deliveredQuantityInput}
-                onChange={(event) => setDeliveredQuantityInput(event.target.value)}
-                disabled={loading}
-                data-testid="partial-delivered-quantity-input"
-              />
-              <p className="text-xs text-muted-foreground">
-                Enter the total quantity delivered so far out of {totalOrderedQuantity}.
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Enter the quantity delivered so far for each item.
               </p>
+              {items.map((item) => (
+                <div key={item.id} className="space-y-1">
+                  <Label htmlFor={`deliveredQuantity-${item.id}`}>
+                    {item.productName}
+                    {item.variantLabel ? (
+                      <span className="ml-1 text-muted-foreground">({item.variantLabel})</span>
+                    ) : null}
+                    <span className="ml-2 text-xs font-normal text-muted-foreground">
+                      ordered: {item.quantity}
+                    </span>
+                  </Label>
+                  <Input
+                    id={`deliveredQuantity-${item.id}`}
+                    type="number"
+                    min={item.deliveredQuantity}
+                    max={item.quantity}
+                    step="1"
+                    value={itemQuantityInputs[item.id] ?? ''}
+                    onChange={(e) =>
+                      setItemQuantityInputs((prev) => ({ ...prev, [item.id]: e.target.value }))
+                    }
+                    disabled={loading}
+                    placeholder={`0–${item.quantity}`}
+                  />
+                </div>
+              ))}
             </div>
           ) : null}
 

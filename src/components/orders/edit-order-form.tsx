@@ -18,7 +18,6 @@ interface ProductVariant {
   variantValue: string
   sku: string
   price: number
-  stock: number
 }
 
 interface Product {
@@ -26,7 +25,6 @@ interface Product {
   name: string
   sku: string
   sellingPrice: number
-  currentStock: number
   category: { name: string } | null
   variants: ProductVariant[]
 }
@@ -148,16 +146,6 @@ export function EditOrderForm({ orderId, customers, products, initialData }: Edi
     }
 
     setItems(newItems)
-  }
-
-  const getAvailableStock = (item: OrderItem): number => {
-    const product = products.find((p) => p.id === item.productId)
-    if (!product) return 0
-    if (item.variantId) {
-      const variant = product.variants.find((v) => v.id === item.variantId)
-      return variant?.stock ?? 0
-    }
-    return product.currentStock
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -289,7 +277,6 @@ export function EditOrderForm({ orderId, customers, products, initialData }: Edi
                 const product = products.find((p) => p.id === item.productId)
                 const hasVariants = (product?.variants.length ?? 0) > 0
                 const isSimpleProduct = Boolean(product) && !hasVariants
-                const availableStock = getAvailableStock(item)
                 const itemTotal = item.quantity * item.unitPrice
 
                 return (
@@ -322,16 +309,10 @@ export function EditOrderForm({ orderId, customers, products, initialData }: Edi
                             label:
                               p.variants.length > 0
                                 ? `${p.name} - ${p.variants.length} variant${p.variants.length > 1 ? 's' : ''}`
-                                : `${p.name} - ${formatCurrency(p.sellingPrice)} (Stock: ${p.currentStock})`,
+                                : `${p.name} - ${formatCurrency(p.sellingPrice)}`,
                           }))}
                           required
                         />
-                        {isSimpleProduct && (
-                          <p className={`mt-2 text-xs ${availableStock < item.quantity ? 'text-destructive' : 'text-muted-foreground'}`}>
-                            Stock: {availableStock}
-                            {availableStock < item.quantity ? ' • Insufficient stock!' : ''}
-                          </p>
-                        )}
                       </div>
 
                       {hasVariants && (
@@ -346,14 +327,11 @@ export function EditOrderForm({ orderId, customers, products, initialData }: Edi
                             options={
                               product?.variants.map((v) => ({
                                 value: v.id,
-                                label: `${v.variantType}: ${v.variantValue} - ${formatCurrency(v.price)} (Stock: ${v.stock})`,
+                                label: `${v.variantType}: ${v.variantValue} - ${formatCurrency(v.price)}`,
                               })) ?? []
                             }
                             required
                           />
-                          {item.variantId && availableStock < item.quantity && (
-                            <p className="mt-1 text-xs text-destructive">Insufficient variant stock!</p>
-                          )}
                         </div>
                       )}
 
@@ -398,18 +376,6 @@ export function EditOrderForm({ orderId, customers, products, initialData }: Edi
 
                     {!isSimpleProduct && (
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {product && (
-                          <div className="col-span-2 flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground">
-                              {hasVariants && item.variantId
-                                ? `Variant stock: ${availableStock}`
-                                : !hasVariants
-                                ? `Stock: ${availableStock}`
-                                : null}
-                            </span>
-                          </div>
-                        )}
-
                         <div>
                           <Label>Quantity</Label>
                           <Input

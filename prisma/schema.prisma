@@ -58,8 +58,6 @@ model Product {
   categoryId       String?
   sellingPrice     Float
   costPrice        Float
-  currentStock     Int             @default(0)
-  lowStockAlert    Int             @default(10)
   isActive         Boolean         @default(true)
   notes            String?
   createdAt        DateTime        @default(now())
@@ -82,7 +80,6 @@ model ProductVariant {
   variantValue String   // "Small", "Red", "Modern", etc.
   sku          String   @unique
   price        Float    // Standalone price for this variant
-  stock        Int      @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   
@@ -148,15 +145,16 @@ model Order {
 
 // Order Items
 model OrderItem {
-  id        String          @id @default(cuid())
-  orderId   String
-  productId String
-  variantId String?
-  quantity  Int
-  unitPrice Float
-  total     Float
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
+  id                String          @id @default(cuid())
+  orderId           String
+  productId         String
+  variantId         String?
+  quantity          Int
+  deliveredQuantity Int             @default(0)
+  unitPrice         Float
+  total             Float
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
   
   order     Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product   Product         @relation(fields: [productId], references: [id], onDelete: Restrict)

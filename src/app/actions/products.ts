@@ -11,8 +11,6 @@ export async function createProduct(formData: FormData) {
   const categoryId = formData.get('categoryId') as string | null
   const sellingPrice = parseFloat(formData.get('sellingPrice') as string)
   const costPrice = parseFloat(formData.get('costPrice') as string)
-  const currentStock = parseInt(formData.get('currentStock') as string)
-  const lowStockAlert = parseInt(formData.get('lowStockAlert') as string)
   const isActive = formData.get('isActive') === 'true'
   const notes = formData.get('notes') as string | null
   const variantsJson = formData.get('variants') as string
@@ -26,8 +24,6 @@ export async function createProduct(formData: FormData) {
       categoryId: categoryId || null,
       sellingPrice,
       costPrice,
-      currentStock,
-      lowStockAlert,
       isActive,
       notes: notes || null,
       variants: {
@@ -36,7 +32,6 @@ export async function createProduct(formData: FormData) {
           variantValue: v.variantValue,
           sku: v.sku,
           price: v.price || 0,
-          stock: v.stock || 0,
         })),
       },
     },
@@ -54,8 +49,6 @@ export async function updateProduct(id: string, formData: FormData) {
   const categoryId = formData.get('categoryId') as string | null
   const sellingPrice = parseFloat(formData.get('sellingPrice') as string)
   const costPrice = parseFloat(formData.get('costPrice') as string)
-  const currentStock = parseInt(formData.get('currentStock') as string)
-  const lowStockAlert = parseInt(formData.get('lowStockAlert') as string)
   const isActive = formData.get('isActive') === 'true'
   const notes = formData.get('notes') as string | null
   const variantsJson = formData.get('variants') as string
@@ -76,8 +69,6 @@ export async function updateProduct(id: string, formData: FormData) {
       categoryId: categoryId || null,
       sellingPrice,
       costPrice,
-      currentStock,
-      lowStockAlert,
       isActive,
       notes: notes || null,
       variants: {
@@ -86,7 +77,6 @@ export async function updateProduct(id: string, formData: FormData) {
           variantValue: v.variantValue,
           sku: v.sku,
           price: v.price || 0,
-          stock: v.stock || 0,
         })),
       },
     },

@@ -18,7 +18,6 @@ interface ProductVariant {
   variantValue: string
   sku: string
   price: number
-  stock: number
 }
 
 interface Product {
@@ -29,8 +28,6 @@ interface Product {
   categoryId: string | null
   sellingPrice: number
   costPrice: number
-  currentStock: number
-  lowStockAlert: number
   isActive: boolean
   notes: string | null
   variants: ProductVariant[]
@@ -80,7 +77,6 @@ export function ProductForm({ product, categories }: ProductFormProps) {
         variantValue: '',
         sku: '',
         price: 0,
-        stock: 0,
       },
     ])
   }
@@ -189,7 +185,7 @@ export function ProductForm({ product, categories }: ProductFormProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Pricing & Stock</CardTitle>
+          <CardTitle>Pricing</CardTitle>
         </CardHeader>
         <CardContent className="pt-0 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -222,36 +218,6 @@ export function ProductForm({ product, categories }: ProductFormProps) {
                 defaultValue={product?.costPrice || ''}
                 placeholder="0.00"
                 data-testid="product-cost-price-input"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="currentStock">
-                Current Stock <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="currentStock"
-                name="currentStock"
-                type="number"
-                required
-                defaultValue={product?.currentStock || 0}
-                placeholder="0"
-                data-testid="product-stock-input"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="lowStockAlert">
-                Low Stock Alert Level <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="lowStockAlert"
-                name="lowStockAlert"
-                type="number"
-                required
-                defaultValue={product?.lowStockAlert || 10}
-                placeholder="10"
-                data-testid="product-low-stock-input"
               />
             </div>
           </div>
@@ -333,15 +299,6 @@ export function ProductForm({ product, categories }: ProductFormProps) {
                         placeholder="0.00"
                         value={variant.price}
                         onChange={(e) => updateVariant(index, 'price', parseFloat(e.target.value) || 0)}
-                      />
-                    </div>
-                    <div>
-                      <Label>Stock</Label>
-                      <Input
-                        type="number"
-                        placeholder="0"
-                        value={variant.stock}
-                        onChange={(e) => updateVariant(index, 'stock', parseInt(e.target.value) || 0)}
                       />
                     </div>
                   </div>

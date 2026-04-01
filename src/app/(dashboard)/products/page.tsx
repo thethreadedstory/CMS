@@ -34,8 +34,6 @@ export default async function ProductsPage({
         sku: true,
         sellingPrice: true,
         costPrice: true,
-        currentStock: true,
-        lowStockAlert: true,
         isActive: true,
         category: {
           select: {

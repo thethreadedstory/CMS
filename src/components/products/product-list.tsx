@@ -9,7 +9,7 @@ import { SelectField } from '@/components/ui/select-field'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
-import { Search, Eye, Edit, Trash2, AlertCircle } from 'lucide-react'
+import { Search, Eye, Edit, Trash2 } from 'lucide-react'
 import { deleteProduct } from '@/app/actions/products'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { toast } from 'sonner'
@@ -20,8 +20,6 @@ interface Product {
   sku: string
   sellingPrice: number
   costPrice: number
-  currentStock: number
-  lowStockAlert: number
   isActive: boolean
   category: { id: string; name: string } | null
   _count: { variants: number }
@@ -142,14 +140,12 @@ export function ProductList({
                     <TableHead>Product</TableHead>
                     <TableHead>Category</TableHead>
                     <TableHead>Price</TableHead>
-                    <TableHead>Stock</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-center">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {products.map((product) => {
-                    const isLowStock = product.currentStock <= product.lowStockAlert
                     const profit = product.sellingPrice - product.costPrice
                     const profitMargin = ((profit / product.sellingPrice) * 100).toFixed(1)
 
@@ -172,14 +168,6 @@ export function ProductList({
                             <p className="font-semibold text-foreground">{formatCurrency(product.sellingPrice)}</p>
                             <p className="text-muted-foreground">Cost: {formatCurrency(product.costPrice)}</p>
                             <p className="text-xs text-emerald-700">Margin: {profitMargin}%</p>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <span className={`font-medium ${isLowStock ? 'text-destructive' : 'text-foreground'}`}>
-                              {product.currentStock}
-                            </span>
-                            {isLowStock && <AlertCircle className="h-4 w-4 text-destructive" />}
                           </div>
                         </TableCell>
                         <TableCell>

@@ -119,29 +119,39 @@ export default async function OrderDetailPage({
           </CardHeader>
           <CardContent className="pt-0">
             <div className="space-y-4">
-              {order.items.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center justify-between rounded-lg border p-4"
-                >
-                  <div className="flex-1">
-                    <p className="font-medium text-foreground">{item.product.name}</p>
-                    {item.variant ? (
-                      <p className="text-xs capitalize text-muted-foreground">
-                        {item.variant.variantType}: {item.variant.variantValue}
+              {order.items.map((item) => {
+                const showDelivery = order.orderStatus === 'PARTIALLY_DELIVERED' || order.orderStatus === 'DELIVERED'
+                const fullyDelivered = item.deliveredQuantity >= item.quantity
+
+                return (
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between rounded-lg border p-4"
+                  >
+                    <div className="flex-1">
+                      <p className="font-medium text-foreground">{item.product.name}</p>
+                      {item.variant ? (
+                        <p className="text-xs capitalize text-muted-foreground">
+                          {item.variant.variantType}: {item.variant.variantValue}
+                        </p>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">No variant</p>
+                      )}
+                      <p className="text-sm text-muted-foreground">
+                        {formatCurrency(item.unitPrice)} × {item.quantity}
                       </p>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">No variant</p>
-                    )}
-                    <p className="text-sm text-muted-foreground">
-                      {formatCurrency(item.unitPrice)} × {item.quantity}
+                      {showDelivery && (
+                        <p className={`mt-1 text-xs font-medium ${fullyDelivered ? 'text-emerald-700' : 'text-amber-700'}`}>
+                          Delivered: {item.deliveredQuantity} / {item.quantity}
+                        </p>
+                      )}
+                    </div>
+                    <p className="font-semibold text-foreground">
+                      {formatCurrency(item.total)}
                     </p>
                   </div>
-                  <p className="font-semibold text-foreground">
-                    {formatCurrency(item.total)}
-                  </p>
-                </div>
-              ))}
+                )
+              })}
             </div>
 
             <div className="mt-6 space-y-2 border-t pt-4">
@@ -272,6 +282,15 @@ export default async function OrderDetailPage({
             currentStatus={order.orderStatus}
             deliveredQuantity={order.deliveredQuantity}
             totalOrderedQuantity={totalOrderedQuantity}
+            items={order.items.map((item) => ({
+              id: item.id,
+              productName: item.product.name,
+              variantLabel: item.variant
+                ? `${item.variant.variantType}: ${item.variant.variantValue}`
+                : null,
+              quantity: item.quantity,
+              deliveredQuantity: item.deliveredQuantity,
+            }))}
           />
 
           <Card>

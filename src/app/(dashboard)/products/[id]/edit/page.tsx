@@ -22,8 +22,6 @@ export default async function EditProductPage({
         categoryId: true,
         sellingPrice: true,
         costPrice: true,
-        currentStock: true,
-        lowStockAlert: true,
         isActive: true,
         notes: true,
         variants: {
@@ -33,7 +31,6 @@ export default async function EditProductPage({
             variantValue: true,
             sku: true,
             price: true,
-            stock: true,
           },
         },
       },

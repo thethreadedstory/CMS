@@ -165,7 +165,6 @@ export const getOrderFormData = unstable_cache(
           name: true,
           sku: true,
           sellingPrice: true,
-          currentStock: true,
           category: {
             select: {
               name: true,
@@ -178,7 +177,6 @@ export const getOrderFormData = unstable_cache(
               variantValue: true,
               sku: true,
               price: true,
-              stock: true,
             },
             orderBy: [{ variantType: 'asc' }, { variantValue: 'asc' }],
           },
