@@ -46,8 +46,6 @@ async function main() {
         categoryId: categories[0].id,
         sellingPrice: 599,
         costPrice: 250,
-        currentStock: 15,
-        lowStockAlert: 5,
       },
     }),
     prisma.product.create({
@@ -58,8 +56,6 @@ async function main() {
         categoryId: categories[1].id,
         sellingPrice: 899,
         costPrice: 400,
-        currentStock: 8,
-        lowStockAlert: 3,
       },
     }),
     prisma.product.create({
@@ -70,8 +66,6 @@ async function main() {
         categoryId: categories[2].id,
         sellingPrice: 1299,
         costPrice: 600,
-        currentStock: 5,
-        lowStockAlert: 2,
       },
     }),
     prisma.product.create({
@@ -82,8 +76,6 @@ async function main() {
         categoryId: categories[3].id,
         sellingPrice: 799,
         costPrice: 350,
-        currentStock: 12,
-        lowStockAlert: 5,
       },
     }),
   ])
