@@ -1,6 +1,6 @@
 import './globals.css'
 import type { Metadata } from 'next'
-import { IBM_Plex_Sans } from 'next/font/google'
+import { Bricolage_Grotesque, Manrope } from 'next/font/google'
 import { ClerkProvider } from '@clerk/nextjs'
 import { NavigationProgress } from '@/components/navigation-progress'
 import { Toaster } from 'sonner'
@@ -8,10 +8,17 @@ import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Analytics } from '@vercel/analytics/next'
 import { Suspense } from 'react'
 
-const ibmPlexSans = IBM_Plex_Sans({
+const bricolageGrotesque = Bricolage_Grotesque({
+  subsets: ['latin'],
+  variable: '--font-heading',
+  weight: ['400', '500', '600', '700', '800'],
+  display: 'swap',
+})
+
+const manrope = Manrope({
   subsets: ['latin'],
   variable: '--font-sans',
-  weight: ['400', '500', '600', '700'],
+  weight: ['400', '500', '600', '700', '800'],
   display: 'swap',
 })
 
@@ -29,7 +36,7 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
         <body
-          className={`${ibmPlexSans.variable} antialiased`}
+          className={`${bricolageGrotesque.variable} ${manrope.variable} antialiased`}
           suppressHydrationWarning
         >
           <Suspense fallback={null}>
