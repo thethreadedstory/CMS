@@ -6,11 +6,13 @@ import { NavigationProgress } from '@/components/navigation-progress'
 import { Toaster } from 'sonner'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Analytics } from '@vercel/analytics/next'
+import { Suspense } from 'react'
 
 const ibmPlexSans = IBM_Plex_Sans({
   subsets: ['latin'],
   variable: '--font-sans',
   weight: ['400', '500', '600', '700'],
+  display: 'swap',
 })
 
 export const metadata: Metadata = {
@@ -30,7 +32,9 @@ export default function RootLayout({
           className={`${ibmPlexSans.variable} antialiased`}
           suppressHydrationWarning
         >
-          <NavigationProgress />
+          <Suspense fallback={null}>
+            <NavigationProgress />
+          </Suspense>
           {children}
           <Toaster position="top-right" richColors />
           <SpeedInsights />
