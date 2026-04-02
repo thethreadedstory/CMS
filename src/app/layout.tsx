@@ -5,6 +5,7 @@ import { ClerkProvider } from '@clerk/nextjs'
 import { NavigationProgress } from '@/components/navigation-progress'
 import { Toaster } from 'sonner'
 import { SpeedInsights } from '@vercel/speed-insights/next'
+import { Analytics } from '@vercel/analytics/next'
 
 const ibmPlexSans = IBM_Plex_Sans({
   subsets: ['latin'],
@@ -33,6 +34,7 @@ export default function RootLayout({
           {children}
           <Toaster position="top-right" richColors />
           <SpeedInsights />
+          <Analytics />
         </body>
       </html>
     </ClerkProvider>
