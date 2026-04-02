@@ -117,11 +117,14 @@ export const getDashboardData = unstable_cache(
       purchasesByMonth.set(key, (purchasesByMonth.get(key) ?? 0) + purchase.totalAmount)
     }
 
+    const profitMargin = salesAmount > 0 ? (totalProfit / salesAmount) * 100 : 0
+
     return {
       stats: {
         totalSales: salesAmount,
         totalPurchases: purchasesAmount,
         totalProfit,
+        profitMargin,
         pendingPayments: pendingAmount,
         totalOrders,
         totalCustomers,

@@ -7,6 +7,7 @@ import {
   Users,
   Package,
   AlertCircle,
+  Percent,
 } from 'lucide-react'
 import { type LucideIcon } from 'lucide-react'
 import Link from 'next/link'
@@ -16,6 +17,7 @@ interface StatsProps {
     totalSales: number
     totalPurchases: number
     totalProfit: number
+    profitMargin: number
     pendingPayments: number
     totalOrders: number
     totalCustomers: number
@@ -64,6 +66,16 @@ export function DashboardStats({ stats }: StatsProps) {
       iconBg: 'rgba(13,148,136,0.1)',
       cardBg: 'rgba(13,148,136,0.03)',
       accentColor: '#0d9488',
+      href: '/dashboard',
+    },
+    {
+      title: 'Profit Margin',
+      value: `${stats.profitMargin.toFixed(1)}%`,
+      icon: Percent,
+      iconColor: '#6366f1',
+      iconBg: 'rgba(99,102,241,0.1)',
+      cardBg: 'rgba(99,102,241,0.03)',
+      accentColor: '#6366f1',
       href: '/dashboard',
     },
     {
