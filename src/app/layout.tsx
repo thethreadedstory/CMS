@@ -4,6 +4,7 @@ import { IBM_Plex_Sans } from 'next/font/google'
 import { ClerkProvider } from '@clerk/nextjs'
 import { NavigationProgress } from '@/components/navigation-progress'
 import { Toaster } from 'sonner'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 
 const ibmPlexSans = IBM_Plex_Sans({
   subsets: ['latin'],
@@ -31,6 +32,7 @@ export default function RootLayout({
           <NavigationProgress />
           {children}
           <Toaster position="top-right" richColors />
+          <SpeedInsights />
         </body>
       </html>
     </ClerkProvider>
